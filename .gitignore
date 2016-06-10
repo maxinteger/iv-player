@@ -1,7 +1,8 @@
 .idea/
 old/
-public/
+public/*
 !public/index.html
+
 # Created by .ignore support plugin (hsz.mobi)
 ### Node template
 # Logs
@@ -42,4 +43,3 @@ jspm_packages
 # Optional REPL history
 .node_repl_history
 
-public/bundle.*
