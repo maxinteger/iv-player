@@ -1,0 +1,18 @@
+.player{
+  width: 640px;
+  margin: 0 auto;
+}
+
+.renderCanvas{
+  border: 1px solid #aaa;
+}
+
+
+.timeBar {
+  padding: 3px 0;
+}
+.progress{
+  height: 5px;
+  background: #333;
+}
+
