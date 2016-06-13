@@ -10,7 +10,7 @@ export default {
 		video_0002: {
 			sources: [
 				//{src: '/video/video_2.mp4', type: 'video/mp4', qty: 'sd'}
-				{src: '/system/posts/videos/000/000/205/original/goomalling-storm.mp4?1446983738', type: 'video/mp4', qty: 'sd'}
+				{src: 'http://mazwai.com/system/posts/videos/000/000/205/original/goomalling-storm.mp4?1446983738', type: 'video/mp4', qty: 'sd'}
 			]
 		}
 	}

@@ -1,3 +1,6 @@
-
+- video switch
+- tests
 - loadeddata event handling handling
+
+DONE:
 - can play video with canvas renderer

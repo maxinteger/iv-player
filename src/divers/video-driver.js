@@ -19,22 +19,27 @@ export const makeVideoDriver = (sources) =>{
 
 	let activeVideo = null;
 
-	const videoPause_ = multiFromEvent('pause', values(videos));
-	const videoPlay_ = multiFromEvent('play', values(videos))
-		.flatMap( (event) => most
-			.periodic(TICK, {type: 'render', target: event.target})
-			.until(videoPause_)
+	const metadata_ = multiFromEvent('loadedmetadata', values(videos));
+	const pause_ = multiFromEvent('pause', values(videos));
+	const play_ = multiFromEvent('play', values(videos))
+		.flatMap( ({target}) => most
+			.periodic(TICK, {type: 'render', target})
+			.until(pause_)
 		);
 
 	return sink_ =>
 		Object.assign(sink_.observe( (action) => {
+		console.log(action);
 			switch (action.type){
 				case PLAY: return activeVideo.play(action.position);
 				case PAUSE: return activeVideo.pause();
 				case SWITCH:
+					console.log(action);
 					if (activeVideo) activeVideo.pause();
 					activeVideo = videos[action.vref];
-					activeVideo.currentTime = action.time || 0;
+					if (action.time){
+						activeVideo.currentTime = action.time;
+					}
 			}
-		}), {videoPlay_});
+		}), {play_});
 };
