@@ -1,3 +1,4 @@
+import hold from '@most/hold';
 import most from 'most';
 import {tap, omit, merge} from 'ramda';
 
@@ -7,6 +8,7 @@ export const makeNavigatorDriver = ({startLink}) => {
 	return sink_ => {
 
 		const events_ = sink_
+			.startWith({type: 'switch', vhref: startLink})
 			.flatMap((action) => {
 				switch (action.type){
 					case 'videolink':
@@ -16,7 +18,8 @@ export const makeNavigatorDriver = ({startLink}) => {
 						]);
 					default: return most.empty()
 				}
-			});
+			})
+			.thru(hold);
 
 		const state_ = sink_.scan((state, action) => merge(state, {[action.type]: omitType(action) }), {});
 

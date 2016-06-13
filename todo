@@ -1,6 +1,8 @@
-- video switch
+- first video setup
 - tests
-- loadeddata event handling handling
+- video loading
+- plugins
 
 DONE:
+- video switch
 - can play video with canvas renderer

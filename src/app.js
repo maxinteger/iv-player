@@ -13,16 +13,14 @@ function main({DOM, Video, Render, Navigator}) {
 	const play_ = DOM.select('#play').events('click').map( () => ({type: PLAY}) );
 	const pause_ = DOM.select('#pause').events('click').map( () => ({type: PAUSE}) );
 	const videoLinks_ = DOM.select('.vlink').events('click').map( x => ({type: 'videolink', vref: x.target.vref}) );
-	const control_ = most
-		.mergeArray([play_, pause_, Navigator.events_])
-		.startWith({});
+	const control_ = Video.state_;
 
-	const video_ = Video.play_;
+	const video_ = Video.events_;
 
 	return {
 		Navigator: videoLinks_,
-		Render: video_,
-		Video: most.merge(control_, Navigator.events_),
+		Render: Video.events_.filter( x => x.type == 'render'),
+		Video: most.mergeArray([play_, pause_, Navigator.events_]),
 		DOM: most
 			.combine( (video, playback) =>
 	//		console.log(playback)||
@@ -31,7 +29,7 @@ function main({DOM, Video, Render, Navigator}) {
 						canvas(`#render-canvas.${s.renderCanvas}`, {props: {width: 640 }})
 					]),
 					div('.controls', [
-						playback.type == PLAY
+						playback.play
 							? button('#pause', 'Pause')
 							: button('#play', 'Play'),
 						button('.vlink', { props: {vref: 'video_0001'}}, 'Video #1'),
