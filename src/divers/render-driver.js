@@ -1,9 +1,7 @@
-import {memoize} from 'ramda';
+import {memoize} from "ramda";
+import {cAF, rAF} from "../utils/polyfill";
 
 const getCanvasContext = memoize((selector) => document.querySelector(selector).getContext('2d'));
-
-const rAF = window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame || window.msRequestAnimationFrame || ( cb => cb.call(null) );
-const cAF = window.cancelAnimationFrame || window.webkitCancelAnimationFrame || window.mozCancelAnimationFrame || window.msCancelAnimationFrame || ( id => null );
 
 export const makeRenderDriver = (canvasSelector) => {
 	let lastRFAId = 0;

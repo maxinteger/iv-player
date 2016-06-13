@@ -1,14 +1,12 @@
 import most from 'most'
 import {createElement} from '../utils/dom';
 import {mapObjIndexed, map, values} from 'ramda';
+import {multiFromEvent} from "../utils/most";
 
 export const PLAY = 'play';
 export const PAUSE = 'pause';
 export const SWITCH = 'switch';
 export const TICK = 1000 / 60;
-
-const multiFromEvent = (event, elements) =>
-	most.mergeArray(map( x => most.fromEvent(event, x), elements ) );
 
 export const makeVideoDriver = (sources) =>{
 	const videos = map( (videoData) =>
