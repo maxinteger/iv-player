@@ -19,9 +19,13 @@ export const makeVideoDriver = (sources) =>{
 
 	const renderAction = (target) => ({type: 'render', source: target, width: target.videoWidth, height: target.videoHeight});
 
-	const metadata_ = multiFromEvent('loadedmetadata', values(videos));
 	const pause_ = multiFromEvent('pause', values(videos));
 	const play_ = multiFromEvent('play', values(videos));
+
+	const metadata_ = multiFromEvent('loadedmetadata', values(videos))
+		.filter( ({target}) => target === activeVideo )
+		.map( ({target}) => renderAction(target) );
+
 	const render_ = play_
 		.flatMap( ({target}) => most
 			.periodic(TICK, renderAction(target))
@@ -33,6 +37,7 @@ export const makeVideoDriver = (sources) =>{
 
 		const events_ = most.mergeArray([
 			render_,
+			metadata_,
 			sink_.flatMap( (action) => {
 			console.log('apply');
 				switch (action.type){
