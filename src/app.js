@@ -7,7 +7,7 @@ import {makeRenderDriver} from './divers/render-driver';
 import {makeVideoDriver, PLAY, PAUSE} from './divers/video-driver';
 import {makeNavigatorDriver} from "./divers/navigator-driver";
 import config from './config';
-import s from './style.css';
+import * as s from './style.css';
 
 function main({DOM, Video, Render, Navigator}) {
 	const play_ = DOM.select('#play').events('click').map( () => ({type: PLAY}) );
@@ -21,8 +21,7 @@ function main({DOM, Video, Render, Navigator}) {
 		Render: Video.events_.filter( x => x.type == 'render'),
 		Video: most.mergeArray([Navigator.events_, play_, pause_]),
 		DOM: most
-			.combine( (video, playback) =>
-	//		console.log(playback)||
+			.combine( ({source}, playback) =>
 				div(`.${s.player}`, [
 					div('.controls', [
 						playback.play
@@ -31,7 +30,7 @@ function main({DOM, Video, Render, Navigator}) {
 						button('.vlink', { props: {vref: 'video_0001', play: false}}, 'Video #1 and pause'),
 						button('.vlink', { props: {vref: 'video_0002', play: true}}, 'Video #2 and play'),
 						div(`.${s.timeBar}`, [
-							div(`.${s.progress}`, {style: {transform: `scaleX(${video.source ? (video.source.currentTime / video.source.duration) : 0})`}})
+							div(`.${s.progress}`, {style: {transform: `scaleX(${source ? (source.currentTime / source.duration) : 0})`}})
 						])
 					]),
 					div('.canvas-container', [
