@@ -17,20 +17,30 @@ export const makeVideoDriver = (sources) =>{
 
 	let activeVideo = null;
 
+	const renderAction = (target) => ({type: 'render', source: target, width: target.videoWidth, height: target.videoHeight});
+
 	const metadata_ = multiFromEvent('loadedmetadata', values(videos));
 	const pause_ = multiFromEvent('pause', values(videos));
 	const play_ = multiFromEvent('play', values(videos));
 	const render_ = play_
 		.flatMap( ({target}) => most
-			.periodic(TICK, {type: 'render', source: target, width: target.videoWidth, height: target.videoHeight})
+			.periodic(TICK, renderAction(target))
 			.until(pause_)
 		);
 
-	const events_ = most.mergeArray([
-		render_
-	]);
 
 	return sink_ =>{
+
+		const events_ = most.mergeArray([
+			render_,
+			sink_.flatMap( (action) => {
+			console.log('apply');
+				switch (action.type){
+					case PAUSE: return most.of(renderAction(activeVideo)).delay(1);
+					default: 	 return most.empty();
+				}
+			})
+		]);
 
 		const state_ = sink_.scan((state, action) => {
 			switch (action.type){
@@ -41,12 +51,11 @@ export const makeVideoDriver = (sources) =>{
 		}, {});
 
 		const sinkObs = sink_.observe( (action) => {
-			console.log(action);
+			console.log('VIDEO ::', action);
 			switch (action.type){
 				case PLAY: return activeVideo && activeVideo.play(action.position);
 				case PAUSE: return activeVideo && activeVideo.pause();
 				case SWITCH:
-					console.log(action);
 					if (activeVideo) activeVideo.pause();
 					activeVideo = videos[action.vref];
 					if (action.time){

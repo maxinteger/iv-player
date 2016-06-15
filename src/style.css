@@ -14,5 +14,7 @@
 .progress{
   height: 5px;
   background: #333;
+  width: 100%;
+  transform-origin: 0;
 }
 
