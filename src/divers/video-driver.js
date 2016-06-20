@@ -17,18 +17,18 @@ export const makeVideoDriver = (sources) =>{
 
 	let activeVideo = null;
 
-	const renderAction = (target) => ({type: 'render', source: target, width: target.videoWidth, height: target.videoHeight});
+	const updateAction = (target) => ({type: 'update', source: target});
 
 	const pause_ = multiFromEvent('pause', values(videos));
 	const play_ = multiFromEvent('play', values(videos));
 
 	const metadata_ = multiFromEvent('loadedmetadata', values(videos))
 		.filter( ({target}) => target === activeVideo )
-		.map( ({target}) => renderAction(target) );
+		.map( ({target}) => updateAction(target) );
 
-	const render_ = play_
+	const update_ = play_
 		.flatMap( ({target}) => most
-			.periodic(TICK, renderAction(target))
+			.periodic(TICK, updateAction(target))
 			.until(pause_)
 		);
 
@@ -36,12 +36,12 @@ export const makeVideoDriver = (sources) =>{
 	return sink_ =>{
 
 		const events_ = most.mergeArray([
-			render_,
+			update_,
 			metadata_,
 			sink_.flatMap( (action) => {
-			console.log('apply');
+			console.log('apply', action.type);
 				switch (action.type){
-					case PAUSE: return most.of(renderAction(activeVideo)).delay(1);
+					case PAUSE: return most.of(updateAction(activeVideo)).delay(1);
 					default: 	 return most.empty();
 				}
 			})
