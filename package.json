@@ -4,7 +4,9 @@
   "description": "video player",
   "main": "public/bundle.js",
   "scripts": {
-    "test": "mocha --compilers js:babel-core/register test",
+    "test": "mocha --compilers js:babel-core/register --recursive test",
+    "coverage": "nyc check-coverage --statements 100 --branches 100 --functions 100 --lines 100",
+    "cover": "nyc npm t",
     "start": "webpack-dev-server",
     "build": "webpack"
   },
@@ -27,6 +29,7 @@
     "css-loader": "^0.23.1",
     "extract-text-webpack-plugin": "^1.0.1",
     "mocha": "^2.5.3",
+    "nyc": "^6.6.1",
     "postcss-loader": "^0.9.1",
     "style-loader": "^0.13.1",
     "webpack": "2.1.0-beta.13",
@@ -36,5 +39,8 @@
   "author": {
     "name": "Laszlo Vadasz"
   },
-  "license": "ISC"
+  "license": "ISC",
+  "nyc": {
+    "include": ["src/**/*.js"]
+  }
 }

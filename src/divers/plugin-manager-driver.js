@@ -45,7 +45,6 @@ export const makePluginManagerDriver = (plugins) => {
 						...filter(x => x.params.timeStart <= action.time, active.timeTrack.get(action.time)),
 						...filter(x => x.params.timeEnd > action.time, activePlugins[activeVideo] || [])
 					]);
-					console.log(activePlugins[activeVideo], activeVideo);
 					break;
 			}
 		});
