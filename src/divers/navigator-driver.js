@@ -24,7 +24,7 @@ export const makeNavigatorDriver = ({startLink}) => {
 
 		const state_ = sink_.scan((state, action) => merge(state, {[action.type]: omitType(action) }), {});
 
-		const sinkObs_ = sink_.observe((action) => { /* nop */ });
+		const sinkObs_ = sink_.observe((action) => { /* noop */ });
 
 		return Object.assign(sinkObs_, { events_, state_ });
 	}

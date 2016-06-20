@@ -21,13 +21,42 @@ export default {
 			video: 'video_0001',
 			timeStart: 1,
 			timeEnd: 5,
-			x: .5,
-			y: .5,
+			x: .01,
+			y: .01,
 			// z: 1,
 			anchor: ''	// t/b/l/r/m -> top/bottom/left/right/middle => tl, br, mm, ... default: tl
 		},
 		settings: {
-
+			color: 'red',
+			vref: 'video_0002'
+		}
+	}, {
+		plugin: 'videolink',
+		params: {
+			scope: 'video', // video or player
+			video: 'video_0001',
+			timeStart: 3,
+			timeEnd: 10,
+			x: .5,
+			y: .5,
+		},
+		settings: {
+			color: 'green',
+			vref: 'video_0002'
+		}
+	}, {
+		plugin: 'videolink',
+		params: {
+			scope: 'video', // video or player
+			video: 'video_0002',
+			timeStart: 0,
+			timeEnd: 10,
+			x: .5,
+			y: .5,
+		},
+		settings: {
+			color: 'blue',
+			vref: 'video_0001'
 		}
 	}]
 }

@@ -1,3 +1,7 @@
+Bug:
+- plugin not appear if jump between the start and the end time
+
+Features:
 - first video setup
 - tests
 - video loading

@@ -13,7 +13,7 @@ import * as s from './style.css';
 function main({DOM, Video, Render, Navigator, Plugin}) {
 	const play_ = DOM.select('#play').events('click').map( () => ({type: PLAY}) );
 	const pause_ = DOM.select('#pause').events('click').map( () => ({type: PAUSE}) );
-	const videoLinks_ = DOM.select('.vlink').events('click').map( x => ({type: 'videolink', vref: x.target.vref, play: x.target.play}) );
+	const videoLinks_ = DOM.select('.vlink').events('click').map( x => ({type: 'videolink', vref: x.target.vref, play: x.target.play, time: x.target.time}) );
 	const control_ = Video.state_;
 	const video_ = Video.events_;
 

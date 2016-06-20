@@ -2,8 +2,11 @@ import {memoize, map, reduce, filter, pipe, groupBy, toPairs, fromPairs, uniq} f
 import {div} from '@motorcycle/dom';
 import {TimeMap} from "../utils/time-map";
 
-export const videolinkPlugin = (settings) => ({DOM}) =>
-	div('.plugin', {style: {display: 'block', position: 'absolute', top: '10px', left: '10px', width: '100px', height: '100px', background: 'red'}});
+export const videolinkPlugin = (desc) => ({DOM}) =>
+	div('.plugin.vlink', {
+		style: {display: 'block', position: 'absolute', top: `${desc.params.x*100}%`, left: `${desc.params.y*100}%`, width: '100px', height: '100px', background: desc.settings.color},
+		props: {vref: desc.settings.vref, play: true, time: 0}
+	});
 
 const pluginResolver = p => videolinkPlugin(p);
 
@@ -21,9 +24,7 @@ export const makePluginManagerDriver = (plugins) => {
 		groupBy( x => x.params.video ),
 		toPairs,
 		map( ([key, value]) => [ key, {
-				timeTrack: reduce( (tm, x)=> tm
-						.add(x.params.timeStart, x),
-					TimeMap(), value),
+				timeTrack: reduce( (tm, x)=> tm.add(x.params.timeStart, x), TimeMap(), value),
 			}]),
 		fromPairs
 	)(pluginsRes);
