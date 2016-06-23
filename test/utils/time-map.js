@@ -3,7 +3,6 @@
 const assert = require('assert');
 const TimeMap = require('../../src/utils/time-map').TimeMap;
 
-console.log(TimeMap);
 describe('TimeMap', ()=> {
 	describe('initialization', ()=>
 		it('should not fail', ()=> {
