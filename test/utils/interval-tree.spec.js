@@ -49,7 +49,7 @@ describe('Interval tree', ()=> {
 		})
 	});
 
-	describe('insert three items then', () => {
+	describe('insert 5 items then', () => {
 		let itree = null;
 		let data = null;
 
@@ -57,22 +57,36 @@ describe('Interval tree', ()=> {
 			itree = IntervalTree();
 			data = 'data';
 			itree
-				.insert(Interval(5, 10), data)
+				.insert(Interval(20, 36), data)
+				.insert(Interval(3, 41), data)
 				.insert(Interval(0, 1), data)
-				.insert(Interval(2, 11), data);
+				.insert(Interval(10, 15), data)
+				.insert(Interval(29, 99), data);
 		});
 
 		it('the size method should be 3', () => {
-			assert.strictEqual( itree.size(), 3);
+			assert.strictEqual( itree.size(), 5);
 		});
 
 		it('the head node maxEnd should be 11', () => {
-			assert.strictEqual( itree.root.maxEnd, 11);
+			assert.strictEqual( itree.root.maxEnd, 99);
+		});
+
+		it('search with -1 should return with 0 item', () => {
+			assert.strictEqual( itree.search(-1).length, 0);
 		});
 
 		it('search with .5 should return with 1 item', () => {
 			assert.strictEqual( itree.search(.5).length, 1);
 			assert.strictEqual( itree.search(.5)[0].interval.start, 0);
+		});
+
+		it('search with 12 should return with 2 item', () => {
+			assert.strictEqual( itree.search(12).length, 2);
+		});
+
+		it('search with 30 should return with 2 item', () => {
+			assert.strictEqual( itree.search(30).length, 2);
 		});
 	})
 });
