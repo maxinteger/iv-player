@@ -1,6 +1,3 @@
-Bug:
-- plugin not appear if jump between the start and the end time
-
 Features:
 - first video setup
 - tests
@@ -11,6 +8,7 @@ Features:
 DONE:
 - video switch
 - can play video with canvas renderer
+- Interval Tree implementation
 
 
 
