@@ -39,7 +39,6 @@ export const makeVideoDriver = (sources) =>{
 			update_,
 			metadata_,
 			sink_.flatMap( (action) => {
-			console.log('apply', action.type);
 				switch (action.type){
 					case PAUSE: return most.of(updateAction(activeVideo)).delay(1);
 					default: 	 return most.empty();
