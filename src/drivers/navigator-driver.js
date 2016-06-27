@@ -5,6 +5,10 @@ import {tap, omit, merge} from 'ramda';
 const omitType = omit(['type']);
 
 export const makeNavigatorDriver = ({startLink}) => {
+	if (!startLink){
+		throw new Error('"startLink" options is required');
+	}
+
 	return sink_ => {
 
 		const events_ = sink_
