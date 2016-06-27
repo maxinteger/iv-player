@@ -3,10 +3,10 @@ import most from 'most';
 import {map, merge} from 'ramda';
 import {div, canvas, button, makeDOMDriver} from '@motorcycle/dom';
 
-import {makeVideoDriver, PLAY, PAUSE} from './divers/video-driver';
-import {makeRenderDriver} from './divers/render-driver';
-import {makeNavigatorDriver} from "./divers/navigator-driver";
-import {makePluginManagerDriver} from "./divers/plugin-manager-driver";
+import {makeVideoDriver, PLAY, PAUSE} from './drivers/video-driver';
+import {makeRenderDriver} from './drivers/render-driver';
+import {makeNavigatorDriver} from "./drivers/navigator-driver";
+import {makePluginManagerDriver} from "./drivers/plugin-manager-driver";
 import config from './config';
 import * as s from './style.css';
 
