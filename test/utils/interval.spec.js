@@ -2,7 +2,7 @@
 /* global describe, it, beforeEach */
 const {is} = require('ramda');
 const assert = require('assert');
-const Interval = require('../../src/utils/interval').Interval;
+const {Interval, contains} = require('../../src/utils/interval');
 
 describe('Interval', ()=> {
 	it('initialization should not fail', ()=> {
@@ -19,15 +19,15 @@ describe('Interval', ()=> {
 		});
 
 		it('should return true for 0.5', () =>
-			assert.strictEqual(interval.contains(0.5), true)
+			assert.strictEqual(contains(0.5, interval), true)
 		);
 
 		it('should return true for 0', () =>
-			assert.strictEqual(interval.contains(0), true)
+			assert.strictEqual(contains(0, interval), true)
 		);
 
 		it('should return false for 1', () =>
-			assert.strictEqual(interval.contains(1), false)
+			assert.strictEqual(contains(1, interval), false)
 		)
 	})
 

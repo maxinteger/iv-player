@@ -1,90 +1,69 @@
 import {max, pathOr, curry} from 'ramda';
+import {contains} from './interval';
 
-const TNodeI = Object.assign(Object.create(null), {
-	init(left, right, interval, data, maxEnd){
-		this.left = left;
-		this.right = right;
-		this.interval = interval;
-		this.maxEnd = maxEnd || interval.end;
-		this.data = data;
-		return this;
+/**
+ * Based on
+ * https://en.wikipedia.org/wiki/Interval_tree
+ * https://en.wikipedia.org/wiki/Binarysearch_tree
+ */
+
+const TNode = (left, right, interval, data, maxEnd) =>
+	Object.assign(Object.create(null), {
+		left: left,
+		right: right,
+		interval: interval,
+		maxEnd: maxEnd || interval.end,
+		data: data,
+	});
+
+export const EmptyTree = null;
+
+export const IntervalTree = () => EmptyTree;
+
+export const isEmpty = tree => tree === EmptyTree;
+
+export const size = tree =>
+	tree === EmptyTree ? 0 : 1 + size(tree.left) + size(tree.right);
+
+
+export const insert = curry((itv, data, tree) =>{
+	if (tree === EmptyTree) {
+		return TNode(EmptyTree, EmptyTree, itv, data, itv.end);
+	} else if (itv.start === tree.interval.start) {
+		return TNode(tree.left, tree.right, itv, data, maxNodeEnd(tree, itv));
+	} else if (itv.start < tree.interval.start) {
+		return TNode(insert(itv, data, tree.left), tree.right, tree.interval, tree.data, maxNodeEnd(tree, itv));
+	} else {
+		return TNode(tree.left, insert(itv, data, tree.right), tree.interval, tree.data, maxNodeEnd(tree, itv));
 	}
 });
 
-const TNode = (left, right, interval, data, maxEnd) => Object.create(TNodeI).init(left, right, interval, data, maxEnd);
 
-const EmptyTNode = null;
+export const search = curry((value, tree) => {
+	let result = [];
 
+	if ((tree === EmptyTree) || (value > tree.maxEnd))
+		return result;
 
-const _size = (node) =>
-	node === EmptyTNode ? 0 : 1 + _size(node.left) + _size(node.right);
+	result = result.concat(search(value, tree.left));
+
+	if(contains(value, tree.interval))
+		result = result.concat(tree);
+
+	if(value < tree.interval.start)
+		return result;
+
+	return result.concat(search(value, tree.right));
+});
+
+export const reduce = curry((fn, start, tree) =>
+	tree !== EmptyTree ? _reduce(fn, _reduce(fn, fn(start, tree), tree.left), tree.right): start
+);
+
+///////////////////////////////////////
 
 const intervalEndProp = pathOr(-Infinity, ['interval', 'end']);
 
 const maxNodeEnd = (node, interval) =>
 	Math.max(...[intervalEndProp(node.left), intervalEndProp(node.right), interval.end]);
 
-const _insert = (node, itv, data) =>{
-	if (node === EmptyTNode) {
-		return TNode(EmptyTNode, EmptyTNode, itv, data, itv.end);
-	} else if (itv.start === node.interval.start) {
-		return TNode(node.left, node.right, itv, data, maxNodeEnd(node, itv));
-	} else if (itv.start < node.interval.start) {
-		return TNode(_insert(node.left, itv, data), node.right, node.interval, node.data, maxNodeEnd(node, itv));
-	} else {
-		return TNode(node.left, _insert(node.right, itv, data), node.interval, node.data, maxNodeEnd(node, itv));
-	}
-};
-
-const _search = (node, value) => {
-	let result = [];
-
-	if ((node === EmptyTNode) || (value > node.maxEnd))
-		return result;
-
-	result = result.concat(_search(node.left, value));
-
-	if(node.interval.contains(value))
-		result = result.concat(node);
-
-	if(value < node.interval.start)
-		return result;
-
-	return result.concat(_search(node.right, value));
-};
-
-const _reduce = curry((fn, start, node) =>
-	node !== EmptyTNode ? _reduce(fn, _reduce(fn, fn(start, node), node.left), node.right): start
-);
-
-
-
-
-const Tree = Object.assign(Object.create(null), {
-	init(){
-		this.root = EmptyTNode;
-		return this;
-	},
-
-	isEmpty(){
-		return this.root === EmptyTNode;
-	},
-
-	size(){
-		return _size(this.root);
-	},
-
-	insert(interval, data){
-		this.root = _insert(this.root, interval, data);
-		return this;
-	},
-
-	search(value){
-		return _search(this.root, value);
-	},
-	toString(){
-		return _reduce( (acc, node) => acc + `[${node.interval.start}-${node.interval.end}|${node.maxEnd}]`, '', this.root)
-	}
-});
-
-export const IntervalTree = () => Object.create(Tree).init();

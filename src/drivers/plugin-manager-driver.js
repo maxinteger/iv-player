@@ -1,7 +1,7 @@
 import {memoize, map, reduce, filter, pipe, groupBy, toPairs, fromPairs, uniq, mapObjIndexed} from "ramda";
 import {div} from '@motorcycle/dom';
 import {Interval} from "../utils/interval";
-import {IntervalTree} from "../utils/interval-tree";
+import * as it from "../utils/interval-tree";
 
 export const videolinkPlugin = (desc) => ({DOM}) =>
 	div('.plugin.vlink', {
@@ -13,7 +13,7 @@ const pluginResolver = p => videolinkPlugin(p);
 
 
 const insertPluginIntoTree = (intTree, plugin) =>
-	intTree.insert(Interval(plugin.params.timeStart, plugin.params.timeEnd), plugin);
+	it.insert(Interval(plugin.params.timeStart, plugin.params.timeEnd), plugin, intTree);
 
 export const makePluginManagerDriver = (plugins) => {
 	const pluginsRes = map(p => ({
@@ -27,7 +27,7 @@ export const makePluginManagerDriver = (plugins) => {
 		filter( scopeIs('video') ),
 		groupBy( x => x.params.video ),
 		mapObjIndexed( group => ({
-			timeTrack: reduce( insertPluginIntoTree, IntervalTree(), group)
+			timeTrack: reduce( insertPluginIntoTree, it.IntervalTree(), group)
 		}))
 	)(pluginsRes);
 
@@ -44,7 +44,8 @@ export const makePluginManagerDriver = (plugins) => {
 					activeVideo = action.vref; break;
 				case 'update':
 					activePlugins[activeVideo] = map(
-						p => p.data, videoPlugins[activeVideo].timeTrack.search(action.time));
+						p => p.data, it.search(action.time, videoPlugins[activeVideo].timeTrack)
+					);
 					break;
 			}
 		});
