@@ -1,7 +1,7 @@
-import Cycle from '@cycle/most-run';
-import most from 'most';
+import Cycle from '@cycle/xstream-run';
+import xs from 'xstream';
 import {map, merge} from 'ramda';
-import {div, canvas, button, makeDOMDriver} from '@motorcycle/dom';
+import {div, canvas, button, makeDOMDriver} from '@cycle/dom';
 
 import {makeVideoDriver, PLAY, PAUSE} from './drivers/video-driver';
 import {makeRenderDriver} from './drivers/render-driver';
@@ -22,19 +22,20 @@ function main({DOM, Video, Render, Navigator, Plugin}) {
 		Render: Video.events_
 			.filter( x => x.type == 'update')
 			.map( ({source}) => ({source, width: source.videoWidth, height: source.videoHeight})),
-		Video: most.mergeArray([
+		Video: xs.merge(
 			Navigator.events_,
 			play_,
 			pause_
-		]),
-		Plugin: most.mergeArray([
+		),
+		Plugin: xs.merge(
 			Video.events_
 				.filter( x => x.type == 'update')
 				.map( ({type, source}) => ({type, time: source.currentTime, length: source.duration})),
 			Navigator.events_
-		]),
-		DOM: most
-			.combine( ({source}, playback) =>
+		),
+		DOM: xs
+			.combine(video_.startWith({}), control_)
+			.map( ([{source}, playback]) =>
 				div(`.${s.player}`, [
 					div('.controls', [
 						playback.play
@@ -51,7 +52,7 @@ function main({DOM, Video, Render, Navigator, Plugin}) {
 						canvas(`#render-canvas.${s.renderCanvas}`, {props: {width: 640 }})
 					])
 				])
-			,video_.startWith({}), control_)
+			)
 	};
 }
 

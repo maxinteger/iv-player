@@ -2,9 +2,10 @@
 /* global describe, it, beforeEach */
 const assert = require('assert');
 const {is} = require('ramda');
-const most = require('most');
+const xs = require('xstream');
+const delay = require('xstream/extra/delay').default;
+const SL = require('../../src/utils/xs').SimpleListener;
 const {makeNavigatorDriver} = require('../../src/drivers/navigator-driver');
-const hold = require('@most/hold');
 
 describe('Navigator driver', ()=> {
 	describe ('makeNavigatorDriver', ()=> {
@@ -35,26 +36,26 @@ describe('Navigator driver', ()=> {
 		let navDriver = null;
 
 		beforeEach(()=>{
-			navDriver = makeNavigatorDriver({startLink: '0001'})(most.just({}));
+			navDriver = makeNavigatorDriver({startLink: '0001'})(xs.Stream.of({}));
 		});
 
 		it('should return with "event_" and "state_" streams', ()=>{
-			assert.strictEqual(is(most.Stream, navDriver.events_), true);
-			assert.strictEqual(is(most.Stream, navDriver.state_), true);
+			assert.strictEqual(is(xs.Stream, navDriver.events_), true);
+			assert.strictEqual(is(xs.Stream, navDriver.state_), true);
 		});
 
 		it(`should emit a switch action trough the event_ stream`, (done)=>
-			navDriver.events_.observe( (data) => {
+			navDriver.events_.addListener(SL((data) => {
 				assert.deepEqual(data, {type: 'switch', vref: '0001', time: null});
 				done();
-			})
+			}))
 		);
 
 		it(`should pause action after the switch action trough the event_ stream`, (done)=>
-			navDriver.events_.skip(1).observe( (data) => {
+			navDriver.events_.drop(1).addListener(SL((data) => {
 				assert.deepEqual(data, {type: 'pause'	});
 				done();
-			})
+			}))
 		)
 	});
 
@@ -63,21 +64,21 @@ describe('Navigator driver', ()=> {
 
 		beforeEach(()=>{
 			navDriver = makeNavigatorDriver({startLink: '0001'})
-				(most.just({type: 'videolink', vref: '0002', time: 10, play: true}).delay(1));
+				(xs.Stream.of({type: 'videolink', vref: '0002', time: 10, play: true}).compose(delay(1)));
 		});
 
 		it('should emit a switch action trough the _event stream', (done)=>{
-			navDriver.events_.skip(2).observe( (data) => {
+			navDriver.events_.drop(2).addListener(SL((data) => {
 				assert.deepEqual(data, {type: 'switch', vref: '0002', time: 10});
 				done();
-			})
+			}))
 		});
 
 		it('after the switch action should emit a play action trough the _event stream', (done)=>{
-			navDriver.events_.skip(3).observe( (data) => {
+			navDriver.events_.drop(3).addListener(SL((data) => {
 				assert.deepEqual(data, {type: 'play'});
 				done();
-			})
+			}))
 		});
 	});
 });

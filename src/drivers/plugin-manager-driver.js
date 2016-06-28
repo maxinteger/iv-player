@@ -1,5 +1,5 @@
-import {memoize, map, reduce, filter, pipe, groupBy, toPairs, fromPairs, uniq, mapObjIndexed} from "ramda";
-import {div} from '@motorcycle/dom';
+import {identity, memoize, map, reduce, filter, pipe, groupBy, toPairs, fromPairs, uniq, mapObjIndexed} from "ramda";
+import {div} from '@cycle/dom';
 import {Interval} from "../utils/interval";
 import * as it from "../utils/interval-tree";
 
@@ -38,18 +38,24 @@ export const makePluginManagerDriver = (plugins) => {
 	let activeVideo = null;
 
 	return sink_ => {
-		const sinkRet = sink_.observe( (action) => {
-			switch (action.type) {
-				case 'switch':
-					activeVideo = action.vref; break;
-				case 'update':
-					activePlugins[activeVideo] = map(
-						p => p.data, it.search(action.time, videoPlugins[activeVideo].timeTrack)
-					);
-					break;
-			}
+		sink_.addListener({
+			next: (action) => {
+				switch (action.type) {
+					case 'switch':
+						activeVideo = action.vref; break;
+					case 'update':
+						if(videoPlugins[activeVideo]){
+							activePlugins[activeVideo] = map(
+								p => p.data, it.search(action.time, videoPlugins[activeVideo].timeTrack)
+							);
+						}
+						break;
+				}
+			},
+			complete: identity,
+			error: identity
 		});
 
-		return Object.assign(sinkRet, {render})
+		return {render};
 	}
 };

@@ -1,6 +1,5 @@
-import hold from '@most/hold';
-import most from 'most';
-import {tap, omit, merge} from 'ramda';
+import xs from 'xstream';
+import {tap, omit, merge, identity} from 'ramda';
 
 const omitType = omit(['type']);
 
@@ -13,23 +12,27 @@ export const makeNavigatorDriver = ({startLink}) => {
 
 		const events_ = sink_
 			.startWith({type: 'videolink', vref: startLink})
-			.flatMap((action) => {
+			.map((action) => {
 				console.log('NAV ::', action);
 				switch (action.type){
 					case 'videolink':
-						return most.from([
+						return xs.fromArray([
 							{type: 'switch', vref: action.vref, time: action.time || null},
 							{type: action.play ? 'play' : 'pause'}
 						]);
-					default: return most.empty()
+					default: return xs.empty()
 				}
 			})
-			.thru(hold);
+			.flatten();
 
-		const state_ = sink_.scan((state, action) => merge(state, {[action.type]: omitType(action) }), {});
+		const state_ = sink_.fold((state, action) => merge(state, {[action.type]: omitType(action) }), {});
 
-		const sinkObs_ = sink_.observe((action) => { /* noop */ });
+		const sinkObs_ = sink_.addListener( {
+			next: action => { /* noop */ },
+			complete: identity,
+			error: identity
+		});
 
-		return Object.assign(sinkObs_, { events_, state_ });
+		return { events_, state_ };
 	}
 };

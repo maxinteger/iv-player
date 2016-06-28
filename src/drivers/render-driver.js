@@ -1,7 +1,7 @@
-import {memoize} from "ramda";
+import {memoize, identity} from "ramda";
 import {cAF, rAF} from "../utils/polyfill";
 
-const getCanvasContext = memoize((selector) => document.querySelector(selector).getContext('2d'));
+const getCanvasContext = (selector) => document.querySelector(selector);
 
 export const makeRenderDriver = (canvasSelector) => {
 	let lastRFAId = 0;
@@ -11,10 +11,17 @@ export const makeRenderDriver = (canvasSelector) => {
 	};
 
 	return sink_ =>
-		sink_.observe(({source, width, height}) => {
-			const ctx = getCanvasContext(canvasSelector);
-			ctx.canvas.height  = height * (ctx.canvas.width / width);
-			cAF(lastRFAId);
-			lastRFAId = rAF(() => render(ctx, source, width, height))
-		})
+		sink_.addListener({
+			next: ({source, width, height}) => {
+				const canvas = getCanvasContext(canvasSelector);
+				if (canvas) {
+					const ctx = canvas.getContext('2d');
+					ctx.canvas.height  = height * (ctx.canvas.width / width);
+					cAF(lastRFAId);
+					lastRFAId = rAF(() => render(ctx, source, width, height))
+				}
+			},
+			complete: identity,
+			error: identity
+		});
 };

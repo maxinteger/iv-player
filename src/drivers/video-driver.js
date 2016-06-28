@@ -1,7 +1,9 @@
-import most from 'most'
+import xs from 'xstream'
+import delay from "xstream/extra/delay";
+import flattenConcurrently  from "xstream/extra/flattenConcurrently";
+import {mapObjIndexed, map, values, merge, identity} from 'ramda';
 import {createElement} from '../utils/dom';
-import {mapObjIndexed, map, values, merge} from 'ramda';
-import {multiFromEvent} from "../utils/most";
+import {multiFromEvent} from "../utils/xs";
 
 export const PLAY = 'play';
 export const PAUSE = 'pause';
@@ -27,26 +29,30 @@ export const makeVideoDriver = (sources) =>{
 		.map( ({target}) => updateAction(target) );
 
 	const update_ = play_
-		.flatMap( ({target}) => most
-			.periodic(TICK, updateAction(target))
-			.until(pause_)
-		);
+		.map( ({target}) => xs
+			.periodic(TICK)
+			.mapTo(updateAction(target))
+			.endWhen(pause_)
+		)
+		.compose(flattenConcurrently);
 
 
 	return sink_ =>{
 
-		const events_ = most.mergeArray([
+		const events_ = xs.merge(
 			update_,
 			metadata_,
-			sink_.flatMap( (action) => {
-				switch (action.type){
-					case PAUSE: return most.of(updateAction(activeVideo)).delay(1);
-					default: 	 return most.empty();
-				}
-			})
-		]);
+			sink_
+				.map( (action) => {
+					switch (action.type){
+						case PAUSE:  return xs.of(updateAction(activeVideo)).compose(delay(1));
+						default: 	 return xs.empty();
+					}
+				})
+				.compose( flattenConcurrently )
+		);
 
-		const state_ = sink_.scan((state, action) => {
+		const state_ = sink_.fold((state, action) => {
 			switch (action.type){
 				case PLAY: return merge(state, {play: true, paused: false});
 				case PAUSE: return merge(state, {play: false, paused: true});
@@ -54,19 +60,23 @@ export const makeVideoDriver = (sources) =>{
 			}
 		}, {});
 
-		const sinkObs = sink_.observe( (action) => {
-			console.log('VIDEO ::', action);
-			switch (action.type){
-				case PLAY: return activeVideo && activeVideo.play(action.position);
-				case PAUSE: return activeVideo && activeVideo.pause();
-				case SWITCH:
-					if (activeVideo) activeVideo.pause();
-					activeVideo = videos[action.vref];
-					if (action.time){
-						activeVideo.currentTime = action.time;
+		const sinkObs = sink_.addListener({
+				next: (action) => {
+					console.log('VIDEO ::', action);
+					switch (action.type){
+						case PLAY: return activeVideo && activeVideo.play(action.position);
+						case PAUSE: return activeVideo && activeVideo.pause();
+						case SWITCH:
+							if (activeVideo) activeVideo.pause();
+							activeVideo = videos[action.vref];
+							if (action.time){
+								activeVideo.currentTime = action.time;
+							}
 					}
-			}
+			},
+			complete: identity,
+			error: identity
 		});
-		return Object.assign(sinkObs, {events_, state_});
+		return {events_, state_};
 	}
 };
