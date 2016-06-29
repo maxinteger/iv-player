@@ -2,20 +2,15 @@ import xs from 'xstream'
 import delay from "xstream/extra/delay";
 import flattenConcurrently  from "xstream/extra/flattenConcurrently";
 import {mapObjIndexed, map, values, merge, identity} from 'ramda';
-import {createElement} from '../utils/dom';
-import {multiFromEvent} from "../utils/xs";
+import {multiFromEvent} from "../../utils/xs";
 
 export const PLAY = 'play';
 export const PAUSE = 'pause';
 export const SWITCH = 'switch';
 export const TICK = 1000 / 60;
 
-export const makeVideoDriver = (sources) =>{
-	const videos = map( (videoData) =>
-		createElement('video', {muted: true, preload: 'metadata'},
-			map( source => createElement('source', source), videoData.sources )
-		)
-	)(sources);
+export const makeVideoDriver = (sources, {playerAdapter}) =>{
+	const videos = map(playerAdapter)(sources);
 
 	let activeVideo = null;
 
@@ -60,19 +55,19 @@ export const makeVideoDriver = (sources) =>{
 			}
 		}, {});
 
-		const sinkObs = sink_.addListener({
-				next: (action) => {
-					console.log('VIDEO ::', action);
-					switch (action.type){
-						case PLAY: return activeVideo && activeVideo.play(action.position);
-						case PAUSE: return activeVideo && activeVideo.pause();
-						case SWITCH:
-							if (activeVideo) activeVideo.pause();
-							activeVideo = videos[action.vref];
-							if (action.time){
-								activeVideo.currentTime = action.time;
-							}
-					}
+		sink_.addListener({
+			next: (action) => {
+				console.log('VIDEO ::', action);
+				switch (action.type){
+					case PLAY: return activeVideo && activeVideo.play(action.position);
+					case PAUSE: return activeVideo && activeVideo.pause();
+					case SWITCH:
+						if (activeVideo) activeVideo.pause();
+						activeVideo = videos[action.vref];
+						if (action.time){
+							activeVideo.currentTime = action.time;
+						}
+				}
 			},
 			complete: identity,
 			error: identity

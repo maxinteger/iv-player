@@ -3,10 +3,11 @@ import xs from 'xstream';
 import {map, merge} from 'ramda';
 import {div, canvas, button, makeDOMDriver} from '@cycle/dom';
 
-import {makeVideoDriver, PLAY, PAUSE} from './drivers/video-driver';
+import {makeVideoDriver, PLAY, PAUSE} from './drivers/video/video-driver';
 import {makeRenderDriver} from './drivers/render-driver';
 import {makeNavigatorDriver} from "./drivers/navigator-driver";
 import {makePluginManagerDriver} from "./drivers/plugin-manager-driver";
+import {html5Player} from './drivers/video/adapters/html5-player-adapter';
 import config from './config';
 import * as s from './style.css';
 
@@ -60,7 +61,9 @@ function main({DOM, Video, Render, Navigator, Plugin}) {
 Cycle.run(main, {
 	DOM: makeDOMDriver('#app-container'),
 	Render: makeRenderDriver('#render-canvas'),
-	Video: makeVideoDriver(config.videos),
+	Video: makeVideoDriver(config.videos, {
+		playerAdapter: html5Player
+	}),
 	Navigator: makeNavigatorDriver({
 		startLink: config.startLink,
 		autoplay: true
