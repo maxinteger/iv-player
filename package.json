@@ -38,6 +38,8 @@
   },
   "license": "ISC",
   "nyc": {
-    "include": ["src/**/*.js"]
+    "include": [
+      "src/**/*.js"
+    ]
   }
 }
