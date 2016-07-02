@@ -1,6 +1,6 @@
 'use strict';
 
-import eventemitter3 from 'eventemitter3';
+import {EventEmitter} from '../../../utils/event-emitter';
 
 const NETWORK_EMPTY		= 0;	//	There is no data yet. Also, readyState is HAVE_NOTHING.
 const NETWORK_IDLE		= 1;	//
@@ -17,8 +17,9 @@ const CAN_PLAY_PROBABLY = 'probably'; 	// The specified media type appears to be
 const CAN_PLAY_MAYBE 	= 'maybe';		// Cannot tell if the media type is playable without playing it.
 const CAN_PLAY_NO 		= '';			//  (empty string)The specified media type definitely cannot be played.
 
-export class MockPlayer{
+export class MockPlayer extends EventEmitter{
 	constructor(){
+		super();
 		this.buffered = null;
 		this.played = null;
 		this.controller = null;
@@ -39,6 +40,8 @@ export class MockPlayer{
 
 		this.volume = 0;
 		this.playbackRate = 1;
+
+		setTimeout(()=> this.triggerEvent('loadedmetadata'), 0);
 	}
 
 	get currentSrc (){ return '' }
@@ -54,8 +57,12 @@ export class MockPlayer{
 
 	canPlayType() { return CAN_PLAY_PROBABLY; }
 	load(){}
-	pause(){}
-	play(){}
+	pause(){
+		this.triggerEvent('pause')
+	}
+	play(){
+		this.triggerEvent('play')
+	}
 }
 
 export const mockPlayer = videoData => new MockPlayer();
