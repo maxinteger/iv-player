@@ -33,7 +33,6 @@ describe('Most utils', ()=> {
 
 			it('should merge into one stream and catch event from target 1', (done) => {
 				stream.addListener(SL((e) => {
-					console.log(e);
 					assert.strictEqual(e.data.a, 1);
 					done()
 				}));
