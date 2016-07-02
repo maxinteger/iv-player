@@ -22,6 +22,11 @@ describe('Event emitter', ()=> {
 			assert.strictEqual(typeof ee.triggerEvent, 'function');
 		});
 
+		it('triggerEvent should not call handler if no added listener', ()=>{
+			ee.triggerEvent('eventx');
+		});
+
+
 		it('triggerEvent should call handler and pass the event type and target', (done)=>{
 			ee.addEventListener('eventx', (event) => {
 				assert.strictEqual(event.type, 'eventx');

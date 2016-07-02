@@ -13,7 +13,7 @@ export class EventEmitter{
 	}
 
 	triggerEvent(event, data){
-		map( fn => fn.call(this, {type: event, target: this, data}), this._events[event]);
+		map( fn => fn.call(this, {type: event, target: this, data}), this._events[event] || []);
 	}
 
 	removeEventListener(event, handler){
