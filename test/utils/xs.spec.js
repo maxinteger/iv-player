@@ -3,15 +3,12 @@
 const assert = require('assert');
 const {is} = require('ramda');
 const {Stream} = require('xstream');
-const {EventEmitter} = require('events');
+const {EventEmitter} = require('../../src/utils/event-emitter');
 const xsUtils = require('../../src/utils/xs');
 const SL = require('../../src/utils/xs').SimpleListener;
 
 const createElement = () => {
-	const e = new EventEmitter();
-	e.addEventListener = e.addListener.bind(e);
-	e.removeEventListener = e.removeListener.bind(e);
-	return e;
+	return new EventEmitter();
 };
 
 describe('Most utils', ()=> {
@@ -36,10 +33,11 @@ describe('Most utils', ()=> {
 
 			it('should merge into one stream and catch event from target 1', (done) => {
 				stream.addListener(SL((e) => {
-					assert.strictEqual(e.a, 1);
+					console.log(e);
+					assert.strictEqual(e.data.a, 1);
 					done()
 				}));
-				eventTarget.emit('eventX', {a: 1})
+				eventTarget.triggerEvent('eventX', {a: 1})
 			});
 		});
 	});
@@ -66,18 +64,18 @@ describe('Most utils', ()=> {
 
 			it('should merge into one stream and catch event from target 1', (done) => {
 				mergedStream.addListener( SL((e) => {
-					assert.strictEqual(e.a, 1);
+					assert.strictEqual(e.data.a, 1);
 					done()
 				}));
-				eventTarget1.emit('eventX', {a:1})
+				eventTarget1.triggerEvent('eventX', {a:1})
 			});
 
 			it('should merge into one stream and catch event from target 2', (done) => {
 				mergedStream.addListener( SL((e) => {
-					assert.strictEqual(e.a, 2);
+					assert.strictEqual(e.data.a, 2);
 					done()
 				}));
-				eventTarget2.emit('eventX', {a:2})
+				eventTarget2.triggerEvent('eventX', {a:2})
 			})
 		});
 	});

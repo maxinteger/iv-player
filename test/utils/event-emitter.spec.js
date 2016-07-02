@@ -31,18 +31,13 @@ describe('Event emitter', ()=> {
 			ee.triggerEvent('eventx');
 		});
 
-		it('triggerEvent should call multiple handler', (done)=>{
+		it('triggerEvent should call multiple handler', ()=>{
 			let count = 0;
-
-			ee.addEventListener('eventx', () => {
-				count++;
-				if(count === 2) done();
-			});
-			ee.addEventListener('eventx', () => {
-				count++;
-				if(count === 2) done();
-			});
+			ee.addEventListener('eventx', () => count++ );
+			ee.addEventListener('eventx', () => count++ );
 			ee.triggerEvent('eventx');
+
+			assert.strictEqual(count, 2)
 		});
 
 		it('triggerEvent should pass event data', (done)=>{
@@ -52,5 +47,29 @@ describe('Event emitter', ()=> {
 			});
 			ee.triggerEvent('eventx', 'data');
 		});
+
+		it('after removeEventListener, triggerEvent should call 1 handler', ()=>{
+			let count = 0;
+			const handler1 = () => count++;
+			const handler2 = () => count++;
+			ee.addEventListener('eventx', handler1);
+			ee.addEventListener('eventx', handler2);
+			ee.removeEventListener('eventx', handler1);
+			ee.triggerEvent('eventx');
+
+			assert.strictEqual(count, 1)
+		});
+
+		it('after removeAllListener, triggerEvent should call 0 handler', ()=>{
+			let count = 0;
+			const handler1 = () => count++;
+			const handler2 = () => count++;
+			ee.addEventListener('eventx', handler1);
+			ee.addEventListener('eventx', handler2);
+			ee.removeAllListener('eventx');
+			ee.triggerEvent('eventx');
+
+			assert.strictEqual(count, 0)
+		})
 	})
 });
