@@ -12,7 +12,7 @@ const TNode = (left, right, interval, data, maxEnd) =>
 		left: left,
 		right: right,
 		interval: interval,
-		maxEnd: maxEnd || interval.end,
+		maxEnd: maxEnd,
 		data: data,
 	});
 
@@ -29,8 +29,6 @@ export const size = tree =>
 export const insert = curry((itv, data, tree) =>{
 	if (tree === EmptyTree) {
 		return TNode(EmptyTree, EmptyTree, itv, data, itv.end);
-	} else if (itv.start === tree.interval.start) {
-		return TNode(tree.left, tree.right, itv, data, maxNodeEnd(tree, itv));
 	} else if (itv.start < tree.interval.start) {
 		return TNode(insert(itv, data, tree.left), tree.right, tree.interval, tree.data, maxNodeEnd(tree, itv));
 	} else {
@@ -55,10 +53,6 @@ export const search = curry((value, tree) => {
 
 	return result.concat(search(value, tree.right));
 });
-
-export const reduce = curry((fn, start, tree) =>
-	tree !== EmptyTree ? _reduce(fn, _reduce(fn, fn(start, tree), tree.left), tree.right): start
-);
 
 ///////////////////////////////////////
 

@@ -47,6 +47,26 @@ describe('Interval tree', ()=> {
 			assert.strictEqual( search(.5, itree).length, 1)
 		})
 	});
+	describe('insert the same interval two times', () => {
+		let itree = null;
+		let data = null;
+
+		beforeEach(() => {
+			data = 'data';
+			itree = pipe(
+				insert(Interval(10, 20), data),
+				insert(Interval(10, 20), data)
+			)(IntervalTree())
+		});
+
+		it('the size method should be 2', () => {
+			assert.strictEqual(size(itree), 2);
+		});
+
+        it('search with 15 should return with 2 item', () => {
+            assert.strictEqual(search(15, itree).length, 2);
+        });
+	});
 
 	describe('insert 5 items then', () => {
 		let itree = null;
