@@ -1,7 +1,7 @@
 import xs from 'xstream'
 import delay from "xstream/extra/delay";
 import flattenConcurrently  from "xstream/extra/flattenConcurrently";
-import {mapObjIndexed, map, values, merge, identity} from 'ramda';
+import {is, mapObjIndexed, map, values, merge, identity} from 'ramda';
 import {multiFromEvent} from "../../utils/xs";
 
 export const PLAY = 'play';
@@ -9,7 +9,15 @@ export const PAUSE = 'pause';
 export const SWITCH = 'switch';
 export const TICK = 1000 / 60;
 
-export const makeVideoDriver = (sources, {playerAdapter}) =>{
+export const makeVideoDriver = (sources, playerAdapter) =>{
+	if(!is(Array, sources) || !sources.length){
+		throw new Error('You mast provide at least one video source');
+	}
+
+	if(!is(Function, playerAdapter)){
+		throw new Error('"playerAdapter" is not a function');
+	}
+
 	const videos = map(playerAdapter)(sources);
 
 	let activeVideo = null;
