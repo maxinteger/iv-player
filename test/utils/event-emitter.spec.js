@@ -22,6 +22,10 @@ describe('Event emitter', ()=> {
 			assert.strictEqual(typeof ee.triggerEvent, 'function');
 		});
 
+		it('removeEventListener should not fail if you call before the first addEventListener', () => {
+			assert.doesNotThrow(() => ee.removeEventListener('eventx') );
+		});
+
 		it('triggerEvent should not call handler if no added listener', ()=>{
 			ee.triggerEvent('eventx');
 		});
