@@ -11,35 +11,7 @@ const createElement = () => {
 	return new EventEmitter();
 };
 
-describe('Most utils', ()=> {
-
-	describe('fromEvent', () => {
-		it('should be a function', () =>
-			assert.strictEqual(typeof xsUtils.fromEvent, 'function')
-		);
-
-		it('should return with Stream', () =>
-			assert.strictEqual(is(Stream, xsUtils.fromEvent('eventX', [])), true)
-		);
-
-		describe('call with event target', () => {
-			let eventTarget = null;
-			let stream = null;
-
-			beforeEach(()=> {
-				eventTarget = createElement();
-				stream = xsUtils.fromEvent('eventX', eventTarget);
-			});
-
-			it('should merge into one stream and catch event from target 1', (done) => {
-				stream.addListener(SL((e) => {
-					assert.strictEqual(e.data.a, 1);
-					done()
-				}));
-				eventTarget.triggerEvent('eventX', {a: 1})
-			});
-		});
-	});
+describe('XStream utils', ()=> {
 
 	describe('multiFromEvent', () => {
 		it('should be a function', () =>
