@@ -1,7 +1,7 @@
 'use strict';
 /* global describe, it, beforeEach */
 const assert = require('assert');
-const {is} = require('ramda');
+const {is, identity} = require('ramda');
 const {Stream} = require('xstream');
 const {EventEmitter} = require('../../src/utils/event-emitter');
 const xsUtils = require('../../src/utils/xs');
@@ -12,6 +12,12 @@ const createElement = () => {
 };
 
 describe('XStream utils', ()=> {
+
+	describe('SimpleListener', () => {
+		it('should return with object that contains "identity" function callbacks', () =>
+			assert.deepEqual(SL(), {next: identity, complete: identity, error: identity})
+		)
+	});
 
 	describe('multiFromEvent', () => {
 		it('should be a function', () =>
