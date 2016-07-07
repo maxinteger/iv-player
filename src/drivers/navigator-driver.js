@@ -25,14 +25,12 @@ export const makeNavigatorDriver = ({startLink}) => {
 			})
 			.flatten();
 
-		const state_ = sink_.fold((state, action) => merge(state, {[action.type]: omitType(action) }), {});
-
 		const sinkObs_ = sink_.addListener( {
 			next: action => { /* noop */ },
 			complete: identity,
 			error: identity
 		});
 
-		return { events_, state_ };
+		return { events_};
 	}
 };

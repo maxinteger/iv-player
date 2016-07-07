@@ -41,7 +41,6 @@ describe('Navigator driver', ()=> {
 
 		it('should return with "event_" and "state_" streams', ()=>{
 			assert.strictEqual(is(xs.Stream, navDriver.events_), true);
-			assert.strictEqual(is(xs.Stream, navDriver.state_), true);
 		});
 
 		it(`should emit a switch action trough the event_ stream`, (done)=>
