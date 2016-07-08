@@ -41,7 +41,6 @@ export const makeVideoDriver = (sources, playerAdapter) =>{
 
 
 	return sink_ =>{
-
 		const events_ = xs.merge(
 			update_,
 			metadata_,
@@ -54,14 +53,6 @@ export const makeVideoDriver = (sources, playerAdapter) =>{
 				})
 				.compose( flattenConcurrently )
 		);
-
-		const state_ = sink_.fold((state, action) => {
-			switch (action.type){
-				case PLAY: return merge(state, {play: true, paused: false});
-				case PAUSE: return merge(state, {play: false, paused: true});
-				default: return state;
-			}
-		}, {});
 
 		sink_.addListener({
 			next: (action) => {
@@ -80,6 +71,6 @@ export const makeVideoDriver = (sources, playerAdapter) =>{
 			complete: identity,
 			error: identity
 		});
-		return {events_, state_};
+		return {events_};
 	}
 };
