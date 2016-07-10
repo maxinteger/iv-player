@@ -50,5 +50,12 @@ describe('Mock player', ()=> {
 			});
 			mp.pause();
 		});
+
+		it('set currentTime should change currentTime', () =>{
+			assert.strictEqual(mp.currentTime, 0);
+			mp.currentTime = 1;
+			assert.strictEqual(mp.currentTime, 1);
+		});
+
 	});
 });

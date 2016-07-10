@@ -1,7 +1,7 @@
 import xs from 'xstream'
 import delay from "xstream/extra/delay";
 import flattenConcurrently  from "xstream/extra/flattenConcurrently";
-import {is, mapObjIndexed, map, values, merge, identity} from 'ramda';
+import {__, isArrayLike, is, map, values, identity, assocPath, keys} from 'ramda';
 import {multiFromEvent} from "../../utils/xs";
 
 export const PLAY = 'play';
@@ -10,7 +10,7 @@ export const SWITCH = 'switch';
 export const TICK = 1000 / 60;
 
 export const makeVideoDriver = (sources, playerAdapter) =>{
-	if(!is(Array, sources) || !sources.length){
+	if(isArrayLike(sources) || !keys(sources).length){
 		throw new Error('You mast provide at least one video source');
 	}
 
@@ -20,7 +20,12 @@ export const makeVideoDriver = (sources, playerAdapter) =>{
 
 	const videos = map(playerAdapter)(sources);
 
-	let activeVideo = null;
+	let state = {
+		activeVideo: null,
+		playing: false
+	};
+
+	const updateState = assocPath(__, __, state);
 
 	const updateAction = (target) => ({type: 'update', source: target});
 
@@ -28,7 +33,7 @@ export const makeVideoDriver = (sources, playerAdapter) =>{
 	const play_ = multiFromEvent('play', values(videos));
 
 	const metadata_ = multiFromEvent('loadedmetadata', values(videos))
-		.filter( ({target}) => target === activeVideo )
+		.filter( ({target}) => target === state.activeVideo )
 		.map( ({target}) => updateAction(target) );
 
 	const update_ = play_
@@ -39,6 +44,7 @@ export const makeVideoDriver = (sources, playerAdapter) =>{
 		)
 		.compose(flattenConcurrently);
 
+	const getState = () => state;
 
 	return sink_ =>{
 		const events_ = xs.merge(
@@ -47,7 +53,9 @@ export const makeVideoDriver = (sources, playerAdapter) =>{
 			sink_
 				.map( (action) => {
 					switch (action.type){
-						case PAUSE:  return xs.of(updateAction(activeVideo)).compose(delay(1));
+						case PAUSE:  return state.activeVideo
+							? xs.of(updateAction(state.activeVideo)).compose(delay(1))
+							: xs.empty();
 						default: 	 return xs.empty();
 					}
 				})
@@ -58,19 +66,28 @@ export const makeVideoDriver = (sources, playerAdapter) =>{
 			next: (action) => {
 				console.log('VIDEO ::', action);
 				switch (action.type){
-					case PLAY: return activeVideo && activeVideo.play(action.position);
-					case PAUSE: return activeVideo && activeVideo.pause();
+					case PLAY:
+						state.playing = true;
+						return state.activeVideo && state.activeVideo.play(action.time);
+
+					case PAUSE:
+						state.playing = false;
+						return state.activeVideo && state.activeVideo.pause();
+
 					case SWITCH:
-						if (activeVideo) activeVideo.pause();
-						activeVideo = videos[action.vref];
+						if (!videos[action.vref]) throw new Error(`Invalid video reference: "${action.vref}"`);
+
+						if (state.activeVideo) state.activeVideo.pause();
+
+						state.activeVideo = videos[action.vref];
 						if (action.time){
-							activeVideo.currentTime = action.time;
+							state.activeVideo.currentTime = action.time;
 						}
 				}
 			},
 			complete: identity,
 			error: identity
 		});
-		return {events_};
+		return {events_, getState};
 	}
 };

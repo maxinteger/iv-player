@@ -41,12 +41,14 @@ export class MockPlayer extends EventEmitter{
 		this.volume = 0;
 		this.playbackRate = 1;
 
+		this._time = 0;
+
 		setTimeout(()=> this.triggerEvent('loadedmetadata'), 0);
 	}
 
 	get currentSrc (){ return '' }
 
-	get currentTime (){ return 0; }
+	get currentTime (){ return this._time; }
 	set currentTime (time){ this._time = time; }
 
 	get ended (){ return this._time === this.duration; }
