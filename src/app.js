@@ -15,7 +15,6 @@ function main({DOM, Video, Render, Navigator, Plugin}) {
 	const play_ = DOM.select('#play').events('click').map( () => ({type: PLAY}) );
 	const pause_ = DOM.select('#pause').events('click').map( () => ({type: PAUSE}) );
 	const videoLinks_ = DOM.select('.vlink').events('click').map( x => ({type: 'videolink', vref: x.target.vref, play: x.target.play, time: x.target.time}) );
-	const control_ = Video.state_;
 	const video_ = Video.events_;
 
 	return {
@@ -35,13 +34,13 @@ function main({DOM, Video, Render, Navigator, Plugin}) {
 			Navigator.events_
 		),
 		DOM: xs
-			.combine(video_.startWith({}), control_)
-			.map( ([{source}, playback]) =>
+			.combine(video_.startWith({}))
+			.map( ([{source}]) =>
 				div(`.${s.player}`, [
 					div('.controls', [
-						playback.play
-							? button('#pause', 'Pause')
-							: button('#play', 'Play'),
+						Video.getState().playing
+							? button('#play', 'Play')
+							: button('#pause', 'Pause'),
 						button('.vlink', { props: {vref: 'video_0001', play: false}}, 'Video #1 and pause'),
 						button('.vlink', { props: {vref: 'video_0002', play: true}}, 'Video #2 and play'),
 						div(`.${s.timeBar}`, [
@@ -50,7 +49,13 @@ function main({DOM, Video, Render, Navigator, Plugin}) {
 					]),
 					div(`.${s.canvasContainer}`, [
 						div(`#plugins.${s.plugins}`, Plugin.render({DOM}) ),
-						canvas(`#render-canvas.${s.renderCanvas}`, {props: {width: 640 }})
+						canvas(`#render-canvas.${s.renderCanvas}`, {
+							props: {width: 640 },
+							hook:{
+								insert: (vnode) => Render.setCanvas(vnode.elm),
+								remove: () => Render.unsetCanvas()
+							}
+						})
 					])
 				])
 			)
@@ -60,10 +65,8 @@ function main({DOM, Video, Render, Navigator, Plugin}) {
 
 Cycle.run(main, {
 	DOM: makeDOMDriver('#app-container'),
-	Render: makeRenderDriver('#render-canvas'),
-	Video: makeVideoDriver(config.videos, {
-		playerAdapter: html5Player
-	}),
+	Render: makeRenderDriver('2d'),
+	Video: makeVideoDriver(config.videos, html5Player),
 	Navigator: makeNavigatorDriver({
 		startLink: config.startLink,
 		autoplay: true
