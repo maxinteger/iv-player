@@ -1,10 +1,11 @@
 'use strict';
 /* global describe, it, beforeEach */
-const {is, identity} = require('ramda');
+const {is} = require('ramda');
 const xs = require('xstream');
+const delay = require('xstream/extra/delay').default;
 const sinon = require('sinon');
 const {mockPlayer, MockPlayer} = require('../../../src/drivers/video/adapters/mock-player-adapter');
-const {makeVideoDriver} = require('../../../src/drivers/video/video-driver');
+const {makeVideoDriver, TICK} = require('../../../src/drivers/video/video-driver');
 const SL = require('../../../src/utils/xs').SimpleListener;
 const assert = require('assert');
 
@@ -126,7 +127,7 @@ describe('Video Driver', ()=> {
                     assert.strictEqual(callback.called, false);
                     assert.strictEqual(vd.getState().playing, false);
                     done();
-                },2)
+                },1)
             });
 
             it('pause action should emit update action from event_ and change state', (done) => {
@@ -159,11 +160,26 @@ describe('Video Driver', ()=> {
             });
 
             xit('play action should emit update action until pause', (done) => {
-                videoDriver(xs.Stream.of({type: 'play'}))
-                    .events_.addListener(SL((action) => {
-                    assert.strictEqual(action.type, 'update');
+                const frameNumber = 10;
+                let counter = 0;
+                const vd = videoDriver(
+                    xs.Stream.merge(
+                        xs.Stream.of(
+                            {type: 'switch', vref: 'video1'},
+                            {type: 'play'}
+                        ),
+                        xs.Stream.of({type: 'pause'}).compose(delay(TICK * frameNumber))
+                    )
+                );
+
+                vd.events_.addListener(SL((action) => {
+                    if (action.type === 'update' && action.source === players[0]) counter ++;
+                }));
+
+                setTimeout(() => {
+                    assert.strictEqual(counter, 2);
                     done()
-                }))
+                }, TICK * (frameNumber + 10))
             });
         } );
 

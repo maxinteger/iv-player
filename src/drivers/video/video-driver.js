@@ -25,8 +25,6 @@ export const makeVideoDriver = (sources, playerAdapter) =>{
 		playing: false
 	};
 
-	const updateState = assocPath(__, __, state);
-
 	const updateAction = (target) => ({type: 'update', source: target});
 
 	const pause_ = multiFromEvent('pause', values(videos));
@@ -64,7 +62,6 @@ export const makeVideoDriver = (sources, playerAdapter) =>{
 
 		sink_.addListener({
 			next: (action) => {
-				console.log('VIDEO ::', action);
 				switch (action.type){
 					case PLAY:
 						state.playing = true;
