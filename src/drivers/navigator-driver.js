@@ -13,7 +13,6 @@ export const makeNavigatorDriver = ({startLink}) => {
 		const events_ = sink_
 			.startWith({type: 'videolink', vref: startLink})
 			.map((action) => {
-				console.log('NAV ::', action);
 				switch (action.type){
 					case 'videolink':
 						return xs.fromArray([

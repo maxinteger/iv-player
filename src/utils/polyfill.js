@@ -1,13 +1,15 @@
 const fps60 = 1000/60;
 
-export const rAF = window.requestAnimationFrame
-	|| window.webkitRequestAnimationFrame
-	|| window.mozRequestAnimationFrame
-	|| window.msRequestAnimationFrame
+const win = typeof window !== 'undefined' ? window : {};
+
+export const rAF = win.requestAnimationFrame
+	|| win.webkitRequestAnimationFrame
+	|| win.mozRequestAnimationFrame
+	|| win.msRequestAnimationFrame
 	|| ( cb => setTimeout(cb, fps60) );
 
-export const cAF = window.cancelAnimationFrame
-	|| window.webkitCancelAnimationFrame
-	|| window.mozCancelAnimationFrame
-	|| window.msCancelAnimationFrame
+export const cAF = win.cancelAnimationFrame
+	|| win.webkitCancelAnimationFrame
+	|| win.mozCancelAnimationFrame
+	|| win.msCancelAnimationFrame
 	|| clearTimeout;
