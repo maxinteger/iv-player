@@ -4,7 +4,7 @@ const assert = require('assert');
 const {is, identity} = require('ramda');
 const {Stream} = require('xstream');
 const {EventEmitter} = require('../../src/utils/event-emitter');
-const xsUtils = require('../../src/utils/xs');
+const {multiFromEvent, EmitProducer} = require('../../src/utils/xs');
 const SL = require('../../src/utils/xs').SimpleListener;
 
 const createElement = () => {
@@ -19,13 +19,55 @@ describe('XStream utils', ()=> {
 		)
 	});
 
+	describe('EmitProducer', () => {
+		it('should be a object with 3 methods', () => {
+			assert(is(Function, EmitProducer));
+            const ep = EmitProducer();
+			assert(is(Function, ep.start));
+			assert(is(Function, ep.stop));
+			assert(is(Function, ep.emit));
+		});
+
+        it('should be a proper XStream producer', () => {
+            assert(is(Stream, Stream.create(EmitProducer())))
+        });
+
+        describe('the emit method', () => {
+            let producer = null;
+            let stream = null;
+
+            beforeEach(() => {
+                producer = EmitProducer();
+                stream = Stream.create(producer);
+            });
+
+            it('should emit a new value in the stream', (done) => {
+                stream.addListener(SL((data) => {
+                    assert(data === 'value');
+                    done();
+                }));
+                producer.emit('value');
+            });
+
+            it('should not emit value after removeListener', (done) => {
+                const handler = SL(() => assert(false));
+                stream.addListener(handler);
+                stream.removeListener(handler);
+                setTimeout(() => {
+                    producer.emit('value');
+                    done();
+                });
+            });
+        });
+	});
+
 	describe('multiFromEvent', () => {
 		it('should be a function', () =>
-			assert.strictEqual(typeof xsUtils.multiFromEvent, 'function')
+			assert.strictEqual(typeof multiFromEvent, 'function')
 		);
 
 		it('should return with Stream', () =>
-			assert.strictEqual(is(Stream, xsUtils.multiFromEvent('eventX', [])), true)
+			assert.strictEqual(is(Stream, multiFromEvent('eventX', [])), true)
 		);
 
 		describe('call with multiple event target', () => {
@@ -36,7 +78,7 @@ describe('XStream utils', ()=> {
 			beforeEach( ()=>{
 				eventTarget1 = createElement();
 				eventTarget2 = createElement();
-				mergedStream = xsUtils.multiFromEvent('eventX', [eventTarget1, eventTarget2]);
+				mergedStream = multiFromEvent('eventX', [eventTarget1, eventTarget2]);
 			});
 
 			it('should merge into one stream and catch event from target 1', (done) => {
