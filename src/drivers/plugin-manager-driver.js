@@ -1,59 +1,66 @@
 import {identity, memoize, map, reduce, filter, pipe, groupBy, toPairs, fromPairs, uniq, mapObjIndexed} from "ramda";
-import {div} from '@cycle/dom';
+import {videoLinkPlugin} from '../plugins/video-link/index';
 import {Interval} from "../utils/interval";
 import * as it from "../utils/interval-tree";
-
-export const videolinkPlugin = (desc) => ({DOM}) =>
-	div('.plugin.vlink', {
-		style: {display: 'block', position: 'absolute', top: `${desc.params.x*100}%`, left: `${desc.params.y*100}%`, width: '100px', height: '100px', background: desc.settings.color},
-		props: {vref: desc.settings.vref, play: true, time: 0}
-	});
-
-const pluginResolver = p => videolinkPlugin(p);
+import {log, logError} from '../utils/log';
 
 
-const insertPluginIntoTree = (intTree, plugin) =>
-	it.insert(Interval(plugin.params.timeStart, plugin.params.timeEnd), plugin, intTree);
+const pluginResolver = p => videoLinkPlugin(p);
+
+const insertPluginIntoTree = (intervalTree, plugin) =>
+	it.insert(Interval(plugin.params.timeStart, plugin.params.timeEnd), plugin, intervalTree);
+
+const scopeType = scope => x => x.params.scope === scope;
+
+const preparePlayerPlugins = filter(scopeType('player'));
+
+const prepareVideoPlugins = pipe(
+	filter(scopeType('video')),
+	groupBy(x => x.params.video),
+	mapObjIndexed(group => ({
+		timeTrack: reduce(insertPluginIntoTree, it.IntervalTree(), group)
+	}))
+);
 
 export const makePluginManagerDriver = (plugins) => {
+	let activeVideo = null;
+	const activePlugins = {};
+
 	const pluginsRes = map(p => ({
 		params: p.params,
 		view: pluginResolver(p)
 	}), plugins);
 
-	const scopeIs = scope => x => x.params.scope === scope;
-	const playerPlugins = filter( scopeIs('player') )(pluginsRes);
-	const videoPlugins = pipe(
-		filter( scopeIs('video') ),
-		groupBy( x => x.params.video ),
-		mapObjIndexed( group => ({
-			timeTrack: reduce( insertPluginIntoTree, it.IntervalTree(), group)
-		}))
-	)(pluginsRes);
+	const playerPlugins = preparePlayerPlugins(pluginsRes);
 
-	const activePlugins = {};
+	const videoPlugins = prepareVideoPlugins(pluginsRes);
 
-	const render = (drivers) => map( p => p.view(drivers), activePlugins[activeVideo] || []);
+	const render = (drivers) => map(
+		p => p.view(drivers),
+		activePlugins[activeVideo] || []
+	);
 
-	let activeVideo = null;
+	const nextHandler = (action) => {
+		switch (action.type) {
+			case 'switch':
+				activeVideo = action.vref;
+				break;
+			case 'update':
+				if (videoPlugins[activeVideo]) {
+					activePlugins[activeVideo] = map(
+						p => p.data,
+						it.search(action.time, videoPlugins[activeVideo].timeTrack)
+					);
+				}
+				break;
+		}
+	};
 
 	return sink_ => {
 		sink_.addListener({
-			next: (action) => {
-				switch (action.type) {
-					case 'switch':
-						activeVideo = action.vref; break;
-					case 'update':
-						if(videoPlugins[activeVideo]){
-							activePlugins[activeVideo] = map(
-								p => p.data, it.search(action.time, videoPlugins[activeVideo].timeTrack)
-							);
-						}
-						break;
-				}
-			},
-			complete: identity,
-			error: identity
+			next: nextHandler,
+			complete: () => log('PMD completed!'),
+			error: logError('PMD Error :: ')
 		});
 
 		return {render};
