@@ -1,5 +1,10 @@
 import {memoize, identity} from "ramda";
 import {cAF, rAF} from "../utils/polyfill";
+import THREE from 'three';
+window.THREE = THREE;
+const StereoEffect = require('three-stereo-effect')(THREE);
+const OrbitControls = require('three-orbit-controls')(THREE);
+const DeviceOrientationControls = require('device-orientation-controls');
 
 export const makeRenderDriver = (renderMode) => {
 	renderMode = (renderMode || '').toLowerCase();
@@ -10,22 +15,92 @@ export const makeRenderDriver = (renderMode) => {
 
 	let lastRFAId = 0;
 	let canvasCtx = null;
+	let scene = null;
+	let activeSource = null;
+	let sphere = null;
+	let effect = null;
+	let renderer = null;
+	let camera = null;
 
 	const render = (ctx, source, width, height) => {
-		ctx.canvas.height = height * (ctx.canvas.width / width);
-		ctx.drawImage(source, 0, 0, width, height, 0, 0, ctx.canvas.width, ctx.canvas.height);
+		if(renderMode === '2d'){
+			ctx.canvas.height = height * (ctx.canvas.width / width);
+			ctx.drawImage(source, 0, 0, width, height, 0, 0, ctx.canvas.width, ctx.canvas.height);
+		} else if (renderMode === '3d'){
+			/*camera.aspect = width / height;
+			camera.updateProjectionMatrix();
+			renderer.setSize(width, height);
+			effect.setSize(width, height);
+			 */
+		}
 	};
 
-	const setCanvas = (elm) => canvasCtx = elm.getContext('2d');
+	const createVideoTexture = (video, sphere) => {
+		var videoTexture = new THREE.VideoTexture(video);
+		videoTexture.minFilter = THREE.LinearFilter;
+		var videoMaterial = new THREE.MeshBasicMaterial({
+			map: videoTexture
+		});
+		var videoMesh = new THREE.Mesh(sphere, videoMaterial);
+		scene.add(videoMesh);
+	};
+
+	const setCanvas = (elm) => {
+		if(renderMode === '2d'){
+			canvasCtx = elm.getContext('2d');
+		} else {
+			canvasCtx = elm;
+
+			renderer = new THREE.WebGLRenderer({canvas: elm, antialias: true, alpha: true});
+			renderer.setPixelRatio(window.devicePixelRatio);
+			renderer.setSize(640, 400);
+			renderer.setClearColor(0x0000ff, 0);
+
+			camera = new THREE.PerspectiveCamera(95, 1, 0.001, 700);
+			camera.position.set(100, 100, 100);
+
+			scene = new THREE.Scene();
+			sphere = new THREE.SphereGeometry(500, 60, 40);
+			sphere.applyMatrix(new THREE.Matrix4().makeScale(-1, 1, 1));
+
+			effect = new StereoEffect(renderer);
+
+
+			let controls = new OrbitControls(camera);
+			//controls.rotateUp(Math.PI / 4);
+			controls.target.set(
+				camera.position.x + 0.1,
+				camera.position.y,
+				camera.position.z
+			);
+			controls.noZoom = true;
+			controls.noPan = true;
+			/*controls = new DeviceOrientationControls(camera, elm, true);
+			controls.connect();
+			controls.update();*/
+		}
+	};
 
 	const unsetCanvas = () => canvasCtx = null;
+
+	const videoTextureMap = new WeakMap();
 
 	return sink_ =>{
 		sink_.addListener({
 			next: ({source, width, height}) => {
 				if (canvasCtx) {
-					cAF(lastRFAId);
-					lastRFAId = rAF(() => render(canvasCtx, source, width, height));
+					if (renderMode === '3d'){
+						if (source !== activeSource) {
+							activeSource = source;
+							createVideoTexture(source, sphere);
+							console.log(scene);
+						}
+						//effect.render(scene, camera);
+						renderer.render(scene, camera);
+					} else if (renderMode === '2d'){
+						cAF(lastRFAId);
+						lastRFAId = rAF(() => render(canvasCtx, source, width, height));
+					}
 				}
 			},
 			complete: identity,

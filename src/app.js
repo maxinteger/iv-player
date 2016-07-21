@@ -51,7 +51,7 @@ function main({DOM, Video, Render, Navigator, Plugin}) {
 					div(`.${s.canvasContainer}`, [
 						div(`#plugins.${s.plugins}`, Plugin.render({DOM}) ),
 						canvas(`#render-canvas.${s.renderCanvas}`, {
-							props: {width: 640 },
+							props: {width: 640 , height: 400},
 							hook:{
 								insert: (vnode) => Render.setCanvas(vnode.elm),
 								remove: () => Render.unsetCanvas()
@@ -66,7 +66,7 @@ function main({DOM, Video, Render, Navigator, Plugin}) {
 
 Cycle.run(main, {
 	DOM: makeDOMDriver('#app-container'),
-	Render: makeRenderDriver('2d'),
+	Render: makeRenderDriver('3d'),
 	Video: makeVideoDriver(config.videos, html5Player),
 	Navigator: makeNavigatorDriver({
 		startLink: config.startLink,
