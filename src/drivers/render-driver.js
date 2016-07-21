@@ -65,6 +65,47 @@ export const makeRenderDriver = (renderMode) => {
 
 			effect = new StereoEffect(renderer);
 
+			var loader = new THREE.FontLoader();
+			loader.load('helvetiker_regular.typeface.json', function (font) {
+				var theText = "Hello three.js! :)";
+
+				var hash = document.location.hash.substr(1);
+
+				if (hash.length !== 0) {
+					theText = hash;
+				}
+
+				var geometry = new THREE.TextGeometry(theText, {
+					font: font,
+					size: 80,
+					height: 20,
+					curveSegments: 2
+				});
+
+				geometry.computeBoundingBox();
+
+				var centerOffset = -0.5 * ( geometry.boundingBox.max.x - geometry.boundingBox.min.x );
+
+				var material = new THREE.MultiMaterial([
+					new THREE.MeshBasicMaterial({color: Math.random() * 0xffffff, overdraw: 0.5}),
+					new THREE.MeshBasicMaterial({color: 0x000000, overdraw: 0.5})
+				]);
+
+				var mesh = new THREE.Mesh(geometry, material);
+
+				mesh.position.x = centerOffset;
+				mesh.position.y = 100;
+				mesh.position.z = 0;
+
+				mesh.rotation.x = 0;
+				//mesh.rotation.y = Math.PI * 2;
+
+				var group = new THREE.Group();
+				group.add(mesh);
+
+				scene.add(group);
+			});
+
 
 			let controls = new OrbitControls(camera);
 			//controls.rotateUp(Math.PI / 4);
