@@ -2,6 +2,7 @@
 old/
 public/*
 !public/index.html
+!public/fonts/
 
 # Created by .ignore support plugin (hsz.mobi)
 ### Node template

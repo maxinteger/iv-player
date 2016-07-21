@@ -66,7 +66,7 @@ export const makeRenderDriver = (renderMode) => {
 			effect = new StereoEffect(renderer);
 
 			var loader = new THREE.FontLoader();
-			loader.load('helvetiker_regular.typeface.json', function (font) {
+			loader.load('fonts/helvetiker_regular.typeface.json', function (font) {
 				var theText = "Hello three.js! :)";
 
 				var hash = document.location.hash.substr(1);
