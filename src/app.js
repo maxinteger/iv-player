@@ -16,17 +16,18 @@ function main({DOM, Video, Render, Navigator, Plugin}) {
 	const pause_ = DOM.select('#pause').events('click').map( () => ({type: PAUSE}) );
 	const videoLinks_ = DOM.select('.vlink').events('click').map( x => ({type: 'videolink', vref: x.target.vref, play: x.target.play, time: x.target.time}) );
 	const video_ = Video.events_;
+	const videoUpdate_ = xs.merge(
+		Navigator.events_,
+		play_,
+		pause_
+	)
 
 	return {
 		Navigator: videoLinks_,
 		Render: Video.events_
 			.filter( x => x.type == 'update')
 			.map( ({source}) => ({source, width: source.videoWidth, height: source.videoHeight})),
-		Video: xs.merge(
-			Navigator.events_,
-			play_,
-			pause_
-		),
+		Video: videoUpdate_,
 		Plugin: xs.merge(
 			Video.events_
 				.filter( x => x.type == 'update')
@@ -34,13 +35,13 @@ function main({DOM, Video, Render, Navigator, Plugin}) {
 			Navigator.events_
 		),
 		DOM: xs
-			.combine(video_.startWith({}))
+			.combine(video_.startWith({}), videoUpdate_.startWith(0))
 			.map( ([{source}]) =>
 				div(`.${s.player}`, [
 					div('.controls', [
 						Video.getState().playing
-							? button('#play', 'Play')
-							: button('#pause', 'Pause'),
+							? button('#pause', 'Pause')
+							: button('#play', 'Play'),
 						button('.vlink', { props: {vref: 'video_0001', play: false}}, 'Video #1 and pause'),
 						button('.vlink', { props: {vref: 'video_0002', play: true}}, 'Video #2 and play'),
 						div(`.${s.timeBar}`, [

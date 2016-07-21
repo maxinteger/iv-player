@@ -1,4 +1,16 @@
-import {div} from '@motorcycle/dom';
+import {div} from '@cycle/dom';
 
-export const videolinkPlugin = (settings) => ({DOM}) =>
-	div('.plugin', {style: {display: 'block', position: 'absolute', top: '10px', left: '10px', width: '100px', height: '100px', background: 'red'}});
+
+export const videoLinkPlugin = (desc) => ({DOM}) =>
+	div('.plugin.vlink', {
+		style: {
+			display: 'block',
+			position: 'absolute',
+			top: `${desc.params.x * 100}%`,
+			left: `${desc.params.y * 100}%`,
+			width: '100px',
+			height: '100px',
+			background: desc.settings.color
+		},
+		props: {vref: desc.settings.vref, play: true, time: 0}
+	});
