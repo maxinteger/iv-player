@@ -56,7 +56,7 @@ export const VideoRender3d = (canvas, devicePixelRatio) => {
 
         var material = new THREE.MultiMaterial([
             new THREE.MeshBasicMaterial({color: Math.random() * 0xffffff, overdraw: 0.5}),
-            new THREE.MeshBasicMaterial({color: 0x000000, overdraw: 0.5})
+            new THREE.MeshBasicMaterial({color: Math.random() * 0xffffff, overdraw: 0.5})
         ]);
 
         var mesh = new THREE.Mesh(geometry, material);
@@ -67,41 +67,68 @@ export const VideoRender3d = (canvas, devicePixelRatio) => {
 
         mesh.rotation.x = 0;
         //mesh.rotation.y = Math.PI * 2;
+        // console.log('MESH', mesh);
 
         var group = new THREE.Group();
         group.add(mesh);
-
         scene.add(group);
+        // console.log('GROUP', group);
 
-		// TODO
-		// Picking stuff
+        var raycaster = new THREE.Raycaster(); // create once
+        var mouse = new THREE.Vector2();
 
-		var raycaster = new THREE.Raycaster(); // create once
-		var mouse = new THREE.Vector2();
+        // User interaction
+        window.addEventListener( 'mousemove', onMouseMove, false );
+        window.addEventListener( 'click', onClick, false );
 
-		// User interaction
-		window.addEventListener( 'mousemove', onMouseMove, false );
+        function onMouseMove( e ) {
 
-		function onMouseMove( e ) {
+            e.preventDefault();
+            if (!setMouseNDC( event )) {
+                return;
+            };
 
-			mouse.x = ( event.clientX / renderer.domElement.width ) * 2 - 1;
-			mouse.y = - ( event.clientY / renderer.domElement.height ) * 2 + 1;
+            raycaster.intersectObjects( group.children )
+                .filter(crossed => crossed.object.geometry.type !== 'SphereGeometry')
+                .forEach(el => {
+                    // console.log('First three.js object crossed: ', el.object);
+                    el.object.material.materials[0] = new THREE.MeshBasicMaterial({color: Math.random() * 0xffffff, overdraw: 0.5});
+                });
+        }
 
-			raycaster.setFromCamera( mouse, camera );
-			var intersects = raycaster.intersectObjects( scene, true );
-			console.log(raycaster);
-			//scene.children.forEach(function( scene ) {
-			//	console.log(scene);
-			//	//scene.material.color.setRGB( scene.grayness, scene.grayness, scene.grayness );
-			//});
+        function onClick( e ) {
 
+            e.preventDefault();
+            if (!setMouseNDC( event )) {
+                return;
+            };
 
-			//for( var i = 0; i < intersects.length; i++ ) {
-			//	var intersection = intersects[ i ],
-			//		obj = intersection.object;
-			//
-			//	console.log(obj)
-			//}
+            raycaster.intersectObjects( group.children )
+                .filter(crossed => crossed.object.geometry.type !== 'SphereGeometry')
+                .forEach(el => {
+                    // console.log('Closest object clicked: ', el.object);
+                    window.alert('Object clicked, this fn should switch to next video!');
+                });
+        }
+
+        function setMouseNDC( event ) {
+            // Calculates Normalized Device Coordinates for the canvas, sets them
+            //   returns boolen if cursor is on the canvas
+            // http://stackoverflow.com/questions/7328472/how-webgl-works
+            // these are Normalized Device Coordinates for the canvas
+            // this will probably break when componentizing the player, or scrolling, etc...!!!
+
+            const leftPadding = event.clientX - ( window.innerWidth - renderer.domElement.width)/2;
+            const topPadding = event.clientY - renderer.domElement.getBoundingClientRect().top;
+
+            mouse.x = ( leftPadding / renderer.domElement.width ) * 2 - 1;
+            mouse.y = - ( topPadding / renderer.domElement.height ) * 2 + 1;
+            raycaster.setFromCamera( mouse, camera );
+
+            const cursorOnCanvas = mouse.x >= -1 && mouse.x <= 1 && mouse.y >= -1 && mouse.y <= 1;
+
+            return cursorOnCanvas;
+        }
     });
     let controls = new OrbitControls(camera);
 
