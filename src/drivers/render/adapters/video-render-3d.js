@@ -72,6 +72,36 @@ export const VideoRender3d = (canvas, devicePixelRatio) => {
         group.add(mesh);
 
         scene.add(group);
+
+		// TODO
+		// Picking stuff
+
+		var raycaster = new THREE.Raycaster(); // create once
+		var mouse = new THREE.Vector2();
+
+		// User interaction
+		window.addEventListener( 'mousemove', onMouseMove, false );
+
+		function onMouseMove( e ) {
+
+			mouse.x = ( event.clientX / renderer.domElement.width ) * 2 - 1;
+			mouse.y = - ( event.clientY / renderer.domElement.height ) * 2 + 1;
+
+			raycaster.setFromCamera( mouse, camera );
+			var intersects = raycaster.intersectObjects( scene, true );
+			console.log(raycaster);
+			//scene.children.forEach(function( scene ) {
+			//	console.log(scene);
+			//	//scene.material.color.setRGB( scene.grayness, scene.grayness, scene.grayness );
+			//});
+
+
+			//for( var i = 0; i < intersects.length; i++ ) {
+			//	var intersection = intersects[ i ],
+			//		obj = intersection.object;
+			//
+			//	console.log(obj)
+			//}
     });
     let controls = new OrbitControls(camera);
 
