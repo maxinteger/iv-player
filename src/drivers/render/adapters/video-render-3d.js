@@ -1,9 +1,8 @@
 import THREE from 'three';
 import {VideoTexture} from "./VideoTexture";
 const StereoEffect = require('three-stereo-effect')(THREE);
-const OrbitControls = require('three-orbit-controls')(THREE);
 window.THREE = THREE;
-const DeviceOrientationControls = require('device-orientation-controls');
+const orientation = require('three.orientation');
 
 export const threeDom = {
     box: 1,
@@ -130,20 +129,33 @@ export const VideoRender3d = (canvas, devicePixelRatio) => {
             return cursorOnCanvas;
         }
     });
-    let controls = new OrbitControls(camera);
 
+    var orientationControl = orientation(camera);
 
-    //controls.rotateUp(Math.PI / 4);
-    controls.target.set(
-        camera.position.x + 0.1,
-        camera.position.y,
-        camera.position.z
-    );
-    controls.noZoom = true;
-    controls.noPan = true;
-    /*controls = new DeviceOrientationControls(camera, elm, true);
-     controls.connect();
-     controls.update();*/
+    function connect() {
+
+        onScreenOrientationChangeEvent(); // run once on load
+
+        window.addEventListener( 'orientationchange', onScreenOrientationChangeEvent, false );
+        window.addEventListener( 'deviceorientation', onDeviceOrientationChangeEvent, false );
+
+    };
+    connect();
+
+    // function disconnect() {
+
+    //     window.removeEventListener( 'orientationchange', onScreenOrientationChangeEvent, false );
+    //     window.removeEventListener( 'deviceorientation', onDeviceOrientationChangeEvent, false );
+
+    // };
+
+    function onDeviceOrientationChangeEvent( event ) {
+        orientationControl.update();
+    };
+
+    function onScreenOrientationChangeEvent() {
+        orientationControl.update();
+    };
 
     var videoMaterial = new THREE.MeshBasicMaterial({
         map: videoTexture
