@@ -35,7 +35,7 @@ export const VideoRender3d = (canvas, devicePixelRatio) => {
 
     loader.load('fonts/helvetiker_regular.typeface.json', function (font) {
 
-        var theText = "Hello three.js! :)";
+        var theText = "3D Videolink";
 
         var hash = document.location.hash.substr(1);
 
@@ -86,7 +86,7 @@ export const VideoRender3d = (canvas, devicePixelRatio) => {
             e.preventDefault();
             if (!setMouseNDC( event )) {
                 return;
-            };
+            }
 
             raycaster.intersectObjects( group.children )
                 .filter(crossed => crossed.object.geometry.type !== 'SphereGeometry')
@@ -101,7 +101,7 @@ export const VideoRender3d = (canvas, devicePixelRatio) => {
             e.preventDefault();
             if (!setMouseNDC( event )) {
                 return;
-            };
+            }
 
             raycaster.intersectObjects( group.children )
                 .filter(crossed => crossed.object.geometry.type !== 'SphereGeometry')
