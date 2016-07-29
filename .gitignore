@@ -3,6 +3,7 @@ old/
 public/*
 !public/index.html
 !public/fonts/
+diff.txt
 
 # Created by .ignore support plugin (hsz.mobi)
 ### Node template

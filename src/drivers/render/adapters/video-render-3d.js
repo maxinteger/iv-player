@@ -1,9 +1,8 @@
 import THREE from 'three';
 import {VideoTexture} from "./VideoTexture";
 const StereoEffect = require('three-stereo-effect')(THREE);
-const OrbitControls = require('three-orbit-controls')(THREE);
 window.THREE = THREE;
-const DeviceOrientationControls = require('device-orientation-controls');
+const orientation = require('three.orientation');
 
 export const threeDom = {
     box: 1,
@@ -35,7 +34,7 @@ export const VideoRender3d = (canvas, devicePixelRatio) => {
 
     loader.load('fonts/helvetiker_regular.typeface.json', function (font) {
 
-        var theText = "Hello three.js! :)";
+        var theText = "3D Videolink";
 
         var hash = document.location.hash.substr(1);
 
@@ -56,7 +55,7 @@ export const VideoRender3d = (canvas, devicePixelRatio) => {
 
         var material = new THREE.MultiMaterial([
             new THREE.MeshBasicMaterial({color: Math.random() * 0xffffff, overdraw: 0.5}),
-            new THREE.MeshBasicMaterial({color: 0x000000, overdraw: 0.5})
+            new THREE.MeshBasicMaterial({color: Math.random() * 0xffffff, overdraw: 0.5})
         ]);
 
         var mesh = new THREE.Mesh(geometry, material);
@@ -67,26 +66,96 @@ export const VideoRender3d = (canvas, devicePixelRatio) => {
 
         mesh.rotation.x = 0;
         //mesh.rotation.y = Math.PI * 2;
+        // console.log('MESH', mesh);
 
         var group = new THREE.Group();
         group.add(mesh);
-
         scene.add(group);
+        // console.log('GROUP', group);
+
+        var raycaster = new THREE.Raycaster(); // create once
+        var mouse = new THREE.Vector2();
+
+        // User interaction
+        window.addEventListener( 'mousemove', onMouseMove, false );
+        window.addEventListener( 'click', onClick, false );
+
+        function onMouseMove( e ) {
+
+            e.preventDefault();
+            if (!setMouseNDC( event )) {
+                return;
+            }
+
+            raycaster.intersectObjects( group.children )
+                .filter(crossed => crossed.object.geometry.type !== 'SphereGeometry')
+                .forEach(el => {
+                    // console.log('First three.js object crossed: ', el.object);
+                    el.object.material.materials[0] = new THREE.MeshBasicMaterial({color: Math.random() * 0xffffff, overdraw: 0.5});
+                });
+        }
+
+        function onClick( e ) {
+
+            e.preventDefault();
+            if (!setMouseNDC( event )) {
+                return;
+            }
+
+            raycaster.intersectObjects( group.children )
+                .filter(crossed => crossed.object.geometry.type !== 'SphereGeometry')
+                .forEach(el => {
+                    // console.log('Closest object clicked: ', el.object);
+                    window.alert('Object clicked, this fn should switch to next video!');
+                });
+        }
+
+        function setMouseNDC( event ) {
+            // Calculates Normalized Device Coordinates for the canvas, sets them
+            //   returns boolen if cursor is on the canvas
+            // http://stackoverflow.com/questions/7328472/how-webgl-works
+            // these are Normalized Device Coordinates for the canvas
+            // this will probably break when componentizing the player, or scrolling, etc...!!!
+
+            const leftPadding = event.clientX - ( window.innerWidth - renderer.domElement.width)/2;
+            const topPadding = event.clientY - renderer.domElement.getBoundingClientRect().top;
+
+            mouse.x = ( leftPadding / renderer.domElement.width ) * 2 - 1;
+            mouse.y = - ( topPadding / renderer.domElement.height ) * 2 + 1;
+            raycaster.setFromCamera( mouse, camera );
+
+            const cursorOnCanvas = mouse.x >= -1 && mouse.x <= 1 && mouse.y >= -1 && mouse.y <= 1;
+
+            return cursorOnCanvas;
+        }
     });
-    let controls = new OrbitControls(camera);
 
+    var orientationControl = orientation(camera);
 
-    //controls.rotateUp(Math.PI / 4);
-    controls.target.set(
-        camera.position.x + 0.1,
-        camera.position.y,
-        camera.position.z
-    );
-    controls.noZoom = true;
-    controls.noPan = true;
-    /*controls = new DeviceOrientationControls(camera, elm, true);
-     controls.connect();
-     controls.update();*/
+    function connect() {
+
+        onScreenOrientationChangeEvent(); // run once on load
+
+        window.addEventListener( 'orientationchange', onScreenOrientationChangeEvent, false );
+        window.addEventListener( 'deviceorientation', onDeviceOrientationChangeEvent, false );
+
+    };
+    connect();
+
+    // function disconnect() {
+
+    //     window.removeEventListener( 'orientationchange', onScreenOrientationChangeEvent, false );
+    //     window.removeEventListener( 'deviceorientation', onDeviceOrientationChangeEvent, false );
+
+    // };
+
+    function onDeviceOrientationChangeEvent( event ) {
+        orientationControl.update();
+    };
+
+    function onScreenOrientationChangeEvent() {
+        orientationControl.update();
+    };
 
     var videoMaterial = new THREE.MeshBasicMaterial({
         map: videoTexture
