@@ -1,4 +1,6 @@
 import THREE from 'three';
+import fontLoader from '../../../utils/font-loader';
+
 import {VideoTexture} from "./VideoTexture";
 const StereoEffect = require('three-stereo-effect')(THREE);
 window.THREE = THREE;
@@ -10,8 +12,14 @@ export const threeDom = {
     group: 1
 };
 
+
+
 export const VideoRender3d = (canvas, devicePixelRatio) => {
     let effect = null;
+
+	fontLoader('fonts/helvetiker_regular.typeface.json')
+		.then(renderCanvas)
+		.catch(error => console.error(error));
 
     const renderer = new THREE.WebGLRenderer({canvas, antialias: true, alpha: true});
     const camera = new THREE.PerspectiveCamera(95, 1, 0.001, 700);
@@ -30,10 +38,8 @@ export const VideoRender3d = (canvas, devicePixelRatio) => {
     sphere.applyMatrix(new THREE.Matrix4().makeScale(-1, 1, 1));
     effect = new StereoEffect(renderer);
 
-    var loader = new THREE.FontLoader();
 
-    loader.load('fonts/helvetiker_regular.typeface.json', function (font) {
-
+   function renderCanvas(font) {
         var theText = "3D Videolink";
 
         var hash = document.location.hash.substr(1);
@@ -128,7 +134,7 @@ export const VideoRender3d = (canvas, devicePixelRatio) => {
 
             return cursorOnCanvas;
         }
-    });
+    }
 
     var orientationControl = orientation(camera);
 
