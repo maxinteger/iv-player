@@ -16,6 +16,7 @@ function main({DOM, Video, Render, Navigator, Plugin}) {
 	const play_ = DOM.select('#play').events('click').map( () => ({type: PLAY}) );
 	const pause_ = DOM.select('#pause').events('click').map( () => ({type: PAUSE}) );
 	const videoLinks_ = DOM.select('.vlink').events('click').map( x => ({type: 'videolink', vref: x.target.vref, play: x.target.play, time: x.target.time}) );
+	const meshVideoLinks_ = Render.events_('intersect').map( x => ({type: 'videolink', vref: x.target.vref, play: true, time: 0}));
 	const video_ = Video.events_;
 	const videoUpdate_ = xs.merge(
 		Navigator.events_,
