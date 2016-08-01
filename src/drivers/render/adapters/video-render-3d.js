@@ -1,6 +1,6 @@
 import THREE from 'three';
-import {VideoTexture} from './VideoTexture';
-import StereoEffect from './StereoEffect.js';
+import {VideoTexture} from "./VideoTexture";
+const StereoEffect = require('three-stereo-effect')(THREE);
 window.THREE = THREE;
 const orientation = require('three.orientation');
 
@@ -28,7 +28,7 @@ export const VideoRender3d = (canvas, devicePixelRatio) => {
 
     const sphere = new THREE.SphereGeometry(500, 60, 40);
     sphere.applyMatrix(new THREE.Matrix4().makeScale(-1, 1, 1));
-    effect = new THREE.StereoEffect(renderer);
+    effect = new StereoEffect(renderer);
 
     var loader = new THREE.FontLoader();
 
@@ -167,12 +167,7 @@ export const VideoRender3d = (canvas, devicePixelRatio) => {
     return {
         render: (source, width, height) =>{
             videoTexture.updateImage(source);
-
-            // The stereoscopic vision is just an effect(renderer wrapper), the raycasting happens before it,
-            // so toggle between 2d/3d below
-
-            // renderer.render(scene, camera);
-            effect.render(scene, camera);
+            renderer.render(scene, camera);
         }
     }
 };
