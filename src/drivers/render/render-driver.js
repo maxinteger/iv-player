@@ -1,5 +1,8 @@
+import xs from 'xstream'
+import flattenConcurrently from "xstream/extra/flattenConcurrently";
 import {cAF, rAF} from "../../utils/polyfill";
 import {log, logError} from "../../utils/log";
+import {fromEvent} from "../../utils/xs";
 
 export const makeRenderDriver = (videoRender) => {
 
@@ -14,7 +17,16 @@ export const makeRenderDriver = (videoRender) => {
 
 	const unsetCanvas = () => videoRenderInstance = null;
 
-	return sink_ =>{
+	const click_ = fromEvent('intersect', videoRender.events);
+
+	return sink_ => {
+		const events_ = xs.merge(
+			click_,
+			sink_
+				.map(/* TODO */)
+				.compose( flattenConcurrently )
+		);
+
 		sink_.addListener({
 			next: ({source, width, height}) => {
 				if (videoRenderInstance) {
@@ -26,6 +38,6 @@ export const makeRenderDriver = (videoRender) => {
 			error: logError('Render driver has fallen')
 		});
 
-		return {setCanvas, unsetCanvas}
+		return {events_, setCanvas, unsetCanvas}
 	}
 };

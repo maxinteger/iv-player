@@ -1,4 +1,5 @@
 import THREE from 'three';
+import {EventEmitter} from "../../../utils/event-emitter";
 import {VideoTexture} from "./VideoTexture";
 const StereoEffect = require('three-stereo-effect')(THREE);
 window.THREE = THREE;
@@ -18,6 +19,7 @@ export const VideoRender3d = (canvas, devicePixelRatio) => {
     const scene = new THREE.Scene();
 
     const videoTexture = new VideoTexture(null);
+	const eventEmitter = new EventEmitter();
     videoTexture.minFilter = THREE.LinearFilter;
 
 
@@ -92,6 +94,7 @@ export const VideoRender3d = (canvas, devicePixelRatio) => {
                 .forEach(el => {
                     // console.log('First three.js object crossed: ', el.object);
                     el.object.material.materials[0] = new THREE.MeshBasicMaterial({color: Math.random() * 0xffffff, overdraw: 0.5});
+					eventEmitter.triggerEvent({type: 'intersect', target: el.obj});
                 });
         }
 
@@ -107,6 +110,7 @@ export const VideoRender3d = (canvas, devicePixelRatio) => {
                 .forEach(el => {
                     // console.log('Closest object clicked: ', el.object);
                     window.alert('Object clicked, this fn should switch to next video!');
+					eventEmitter.triggerEvent({type: 'intersect', target: el.obj});
                 });
         }
 
@@ -151,11 +155,11 @@ export const VideoRender3d = (canvas, devicePixelRatio) => {
 
     function onDeviceOrientationChangeEvent( event ) {
         orientationControl.update();
-    };
+    }
 
     function onScreenOrientationChangeEvent() {
         orientationControl.update();
-    };
+    }
 
     var videoMaterial = new THREE.MeshBasicMaterial({
         map: videoTexture
@@ -165,9 +169,10 @@ export const VideoRender3d = (canvas, devicePixelRatio) => {
 
 
     return {
-        render: (source, width, height) =>{
+        render: (source, width, height) => {
             videoTexture.updateImage(source);
             renderer.render(scene, camera);
-        }
+        },
+		events: eventEmitter
     }
 };
