@@ -16,7 +16,6 @@
     "@cycle/xstream-run": "3.0.0",
     "ramda": "^0.21.0",
     "three": "^0.79.0",
-    "three-stereo-effect": "^1.0.13",
     "three.orientation": "^1.1.0",
     "xstream": "5.0.6"
   },
