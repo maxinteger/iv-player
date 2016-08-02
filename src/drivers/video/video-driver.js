@@ -3,7 +3,7 @@ import delay from "xstream/extra/delay";
 import flattenConcurrently  from "xstream/extra/flattenConcurrently";
 import {__, isArrayLike, is, map, values, identity, assocPath, keys} from 'ramda';
 import {multiFromEvent, EmitProducer} from "../../utils/xs";
-
+export const SHAKE = 'vertical-shake';
 export const PLAY = 'play';
 export const PAUSE = 'pause';
 export const SWITCH = 'switch';
@@ -62,7 +62,10 @@ export const makeVideoDriver = (sources, playerAdapter) =>{
 
 		sink_.addListener({
 			next: (action) => {
-				switch (action.type){
+				if(action.type === SHAKE) {
+					action.type = state.playing ? PAUSE : PLAY
+				}
+					switch (action.type){
 					case PLAY:
 						state.playing = true;
 						return state.activeVideo && state.activeVideo.play(action.time);

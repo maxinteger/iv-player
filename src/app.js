@@ -7,23 +7,26 @@ import {makeRenderDriver} from './drivers/render/render-driver';
 import {makeNavigatorDriver} from "./drivers/navigator-driver";
 import {makePluginManagerDriver} from "./drivers/plugin-manager-driver";
 import {html5Player} from './drivers/video/adapters/html5-player-adapter';
+import {makeDeviceEvents} from './drivers/device-events/index'
 import config from './config';
 import * as s from './style.css';
 import {VideoRender2d} from "./drivers/render/adapters/video-render-2d";
 import {VideoRender3d} from "./drivers/render/adapters/video-render-3d";
 
-function main({DOM, Video, Render, Navigator, Plugin}) {
+function main({DOM, Video, Render, Navigator, Plugin, DeviceEvents}) {
 	const play_ = DOM.select('#play').events('click').map( () => ({type: PLAY}) );
 	const pause_ = DOM.select('#pause').events('click').map( () => ({type: PAUSE}) );
 	const videoLinks_ = DOM.select('.vlink').events('click').map( x => ({type: 'videolink', vref: x.target.vref, play: x.target.play, time: x.target.time}) );
 	const video_ = Video.events_;
 	const videoUpdate_ = xs.merge(
+		DeviceEvents.events_,
 		Navigator.events_,
 		play_,
 		pause_
 	);
 
 	return {
+		DeviceEvents: DeviceEvents.events_,
 		Navigator: videoLinks_,
 		Render: Video.events_
 			.filter( x => x.type == 'update')
@@ -77,5 +80,6 @@ Cycle.run(main, {
 		startLink: config.startLink,
 		autoplay: true
 	}),
-	Plugin: makePluginManagerDriver(config.plugins)
+	Plugin: makePluginManagerDriver(config.plugins),
+	DeviceEvents: makeDeviceEvents()
 });
