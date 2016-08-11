@@ -4,7 +4,8 @@ import {map, merge} from 'ramda';
 import {div, canvas, button, makeDOMDriver} from '@cycle/dom';
 
 import {makeVideoDriver, PLAY, PAUSE} from './drivers/video/video-driver';
-import {makeRenderDriver} from './drivers/render-driver';
+import {makeRenderDriver} from './drivers/render';
+import {VideoRender2d} from "./drivers/render/render-2d";
 import {makeNavigatorDriver} from "./drivers/navigator-driver";
 import {makePluginManagerDriver} from "./drivers/plugin-manager-driver";
 import {html5Player} from './drivers/video/adapters/html5-player-adapter';
@@ -20,7 +21,7 @@ function main({DOM, Video, Render, Navigator, Plugin}) {
 		Navigator.events_,
 		play_,
 		pause_
-	)
+	);
 
 	return {
 		Navigator: videoLinks_,
@@ -66,7 +67,10 @@ function main({DOM, Video, Render, Navigator, Plugin}) {
 
 Cycle.run(main, {
 	DOM: makeDOMDriver('#app-container'),
-	Render: makeRenderDriver('2d'),
+	Render: makeRenderDriver(
+		config.renderMode === '2d' ? VideoRender2d :
+				null
+	),
 	Video: makeVideoDriver(config.videos, html5Player),
 	Navigator: makeNavigatorDriver({
 		startLink: config.startLink,

@@ -1,4 +1,5 @@
 export default {
+	renderMode: '2d',
 	startLink: 'video_0001',
 	videos: {
 		video_0001:{
