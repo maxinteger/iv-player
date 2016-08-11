@@ -4,7 +4,7 @@ const assert = require('assert');
 const {is, identity} = require('ramda');
 const {Stream} = require('xstream');
 const {EventEmitter} = require('../../src/utils/event-emitter');
-const {multiFromEvent, EmitProducer} = require('../../src/utils/xs');
+const {multiFromEvent} = require('../../src/utils/xs');
 const SL = require('../../src/utils/xs').SimpleListener;
 
 const createElement = () => {
@@ -17,48 +17,6 @@ describe('XStream utils', ()=> {
 		it('should return with object that contains "identity" function callbacks', () =>
 			assert.deepEqual(SL(), {next: identity, complete: identity, error: identity})
 		)
-	});
-
-	describe('EmitProducer', () => {
-		it('should be a object with 3 methods', () => {
-			assert(is(Function, EmitProducer));
-            const ep = EmitProducer();
-			assert(is(Function, ep.start));
-			assert(is(Function, ep.stop));
-			assert(is(Function, ep.emit));
-		});
-
-        it('should be a proper XStream producer', () => {
-            assert(is(Stream, Stream.create(EmitProducer())))
-        });
-
-        describe('the emit method', () => {
-            let producer = null;
-            let stream = null;
-
-            beforeEach(() => {
-                producer = EmitProducer();
-                stream = Stream.create(producer);
-            });
-
-            it('should emit a new value in the stream', (done) => {
-                stream.addListener(SL((data) => {
-                    assert(data === 'value');
-                    done();
-                }));
-                producer.emit('value');
-            });
-
-            it('should not emit value after removeListener', (done) => {
-                const handler = SL(() => assert(false));
-                stream.addListener(handler);
-                stream.removeListener(handler);
-                setTimeout(() => {
-                    producer.emit('value');
-                    done();
-                });
-            });
-        });
 	});
 
 	describe('multiFromEvent', () => {

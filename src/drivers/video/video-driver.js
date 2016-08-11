@@ -2,7 +2,7 @@ import xs from 'xstream'
 import delay from "xstream/extra/delay";
 import flattenConcurrently  from "xstream/extra/flattenConcurrently";
 import {__, isArrayLike, is, map, values, identity, assocPath, keys} from 'ramda';
-import {multiFromEvent, EmitProducer} from "../../utils/xs";
+import {multiFromEvent} from "../../utils/xs";
 
 export const PLAY = 'play';
 export const PAUSE = 'pause';
