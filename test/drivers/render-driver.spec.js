@@ -5,7 +5,7 @@ const {is} = require('ramda');
 const xs = require('xstream');
 const delay = require('xstream/extra/delay').default;
 const sinon = require('sinon');
-const {makeRenderDriver} = require('../../src/drivers/render-driver');
+const {makeRenderDriver} = require('../../src/drivers/render');
 
 const createDummyCanvas = () => ({
     getContext () { return this.context },
@@ -22,16 +22,16 @@ describe('Render driver', () => {
             assert.strictEqual(is(Function, makeRenderDriver), true)
         );
 
-        it('should fail without render mode parameter', () =>{
+        it('should fail without render adapter parameter', () =>{
             try{
                 makeRenderDriver()
             } catch (e) {
-                assert.strictEqual(e.message, 'You mast provide render mode (2d or 3d)');
+                assert.strictEqual(e.message, 'renderAdapter must be a function');
             }
         });
 
         it('should return with a function', ()=>
-            assert.strictEqual(is(Function, makeRenderDriver('2d')), true)
+            assert.strictEqual(is(Function, makeRenderDriver(() => null)), true)
         );
 
     });
@@ -39,10 +39,14 @@ describe('Render driver', () => {
     describe('after init with empty stream', ()=> {
         let renderDriver = null;
         let dummyCanvas = null;
+        let renderFn = null;
+        let adapter = null;
 
         beforeEach(()=> {
-            renderDriver = makeRenderDriver('2d')(xs.Stream.of());
-            dummyCanvas = createDummyCanvas();
+            renderFn = sinon.spy();
+            adapter = sinon.spy(() => renderFn);
+            dummyCanvas = {};
+            renderDriver = makeRenderDriver(adapter)(xs.Stream.of());
         });
 
         it('should return with 2 methods', ()=> {
@@ -51,10 +55,9 @@ describe('Render driver', () => {
         });
 
         it('setCanvas should call getContext on canvas', () => {
-            const spy = sinon.spy(dummyCanvas, 'getContext');
             renderDriver.setCanvas(dummyCanvas);
-            assert.strictEqual(spy.calledOnce, true);
-            assert.strictEqual(spy.calledWith('2d'), true);
+            assert.strictEqual(adapter.calledOnce, true);
+            assert.strictEqual(adapter.calledWith(dummyCanvas), true);
         });
 
     });
@@ -63,11 +66,15 @@ describe('Render driver', () => {
         let renderDriver = null;
         let dummyCanvas = null;
         let source = null;
+        let renderFn = null;
+        let adapter = null;
 
         beforeEach(()=> {
             source = {};
             dummyCanvas = createDummyCanvas();
-            renderDriver = makeRenderDriver('2d')(
+            renderFn = sinon.spy();
+            adapter = sinon.spy(() => renderFn);
+            renderDriver = makeRenderDriver(adapter)(
                 xs.Stream
                     .of({source, width: 100, height: 100})
                     .compose(delay(1))
@@ -79,8 +86,8 @@ describe('Render driver', () => {
             const spy = sinon.spy(dummyCanvas.context, 'drawImage');
             renderDriver.setCanvas(dummyCanvas);
             setTimeout(() => {
-                assert.strictEqual(spy.calledOnce, true);
-                assert.strictEqual(spy.calledWith(source, 0, 0, 100, 100, 0, 0, 100, 100), true, 'drawImage called with');
+                assert.strictEqual(renderFn.calledOnce, true);
+                assert.strictEqual(renderFn.calledWith(source, 100, 100), true, 'renderFn called with');
                 done();
             }, Math.ceil(1000/60) + 10)
         });

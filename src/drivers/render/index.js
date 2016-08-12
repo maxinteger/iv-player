@@ -1,25 +1,22 @@
-import {cAF, rAF} from "../../utils/polyfill";
 import {log, logError} from "../../utils/log";
 
-export const makeRenderDriver = (videoRender) => {
+export const makeRenderDriver = (renderAdapter) => {
 
-    if (typeof videoRender != 'function') {
-        throw new Error('videoRender must be a function');
+    if (typeof renderAdapter != 'function') {
+        throw new Error('renderAdapter must be a function');
     }
 
-    let videoRenderInstance = null;
-    let lastRFAId = 0;
+    let renderFn = null;
 
-    const setCanvas = (elm) => videoRenderInstance = videoRender(elm);
+    const setCanvas = elm => renderFn = renderAdapter(elm);
 
-    const unsetCanvas = () => videoRenderInstance = null;
+    const unsetCanvas = () => renderFn = null;
 
     return sink_ => {
         sink_.addListener({
             next: ({source, width, height}) => {
-                if (videoRenderInstance) {
-                    cAF(lastRFAId);
-                    lastRFAId = rAF(() => videoRenderInstance.render(source, width, height));
+                if (renderFn) {
+                    renderFn(source, width, height)
                 }
             },
             complete: () => log('Render driver completed'),

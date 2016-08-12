@@ -57,19 +57,9 @@ describe('Video Driver', ()=> {
                 videoDriver = makeVideoDriver({video1: {}}, wrapPlayer(players))((xs.Stream.of({})));
             });
 
-            it('should return with "event_" and "state_" streams', ()=> {
-                assert.strictEqual(is(xs.Stream, videoDriver.events_), true);
-                assert.strictEqual(is(xs.Stream, videoDriver.state_), true);
-            });
-
-            it(' state_ stream should start with initial state', (done) => {
-                videoDriver.state_.addListener(SL( state => {
-                    assert.deepStrictEqual(state, {
-                        activeVideo: null,
-                        playing: false
-                    });
-                    done();
-                }))
+            it('should return with "event_" stream and "getState" function', ()=> {
+                assert.strictEqual(is(xs.Stream, videoDriver.events_), true, 'not a stream');
+                assert.strictEqual(is(Function, videoDriver.getState), true, 'not a function');
             });
         });
 
@@ -91,15 +81,6 @@ describe('Video Driver', ()=> {
             it('switch action should throw error if the vref is invalid', () => {
                 assert.throws(() => videoDriver(xs.Stream.of({type: 'switch', vref: 'invalidVref'})) );
             });
-
-            it('switch action should change active video state', () => {
-                const vd = videoDriver(xs.Stream.of({type: 'switch', vref: 'video1'}));
-                vd.state_.addListener(SL((state) => {
-
-                }));
-                assert.strictEqual(is(MockPlayer, vd.getState().activeVideo), true)
-            });
-
 
             it('switch action should change active video state', (done) => {
                 const pauseSpy = sinon.spy(players[0], 'pause');
