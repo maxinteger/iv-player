@@ -6,7 +6,7 @@ import {div, canvas, button, makeDOMDriver} from '@cycle/dom';
 import {makeVideoDriver, PLAY, PAUSE} from './drivers/video/video-driver';
 import {makeRenderDriver} from './drivers/render';
 import {VideoRender2d} from "./drivers/render/render-2d";
-import {makeNavigatorDriver} from "./drivers/navigator-driver";
+import navigator from "./lib/navigator";
 import {makePluginManagerDriver} from "./drivers/plugin-manager-driver";
 import {html5Player} from './drivers/video/adapters/html5-player-adapter';
 import config from './config';
@@ -17,8 +17,11 @@ function main({DOM, Video, Render, Navigator, Plugin}) {
 	const pause_ = DOM.select('#pause').events('click').map( () => ({type: PAUSE}) );
 	const videoLinks_ = DOM.select('.vlink').events('click').map( x => ({type: 'videolink', vref: x.target.vref, play: x.target.play, time: x.target.time}) );
 	const video_ = Video.events_;
+	const nav_ = videoLinks_
+		.compose(navigator({ startLink: config.startLink, autoplay: true }));
+
 	const videoUpdate_ = xs.merge(
-		Navigator.events_,
+		nav_,
 		play_,
 		pause_
 	);
@@ -33,7 +36,7 @@ function main({DOM, Video, Render, Navigator, Plugin}) {
 			Video.events_
 				.filter( x => x.type == 'update')
 				.map( ({type, source}) => ({type, time: source.currentTime, length: source.duration})),
-			Navigator.events_
+			nav_
 		),
 		DOM: xs
 			.combine(video_.startWith({}), videoUpdate_.startWith(0))
@@ -68,13 +71,8 @@ function main({DOM, Video, Render, Navigator, Plugin}) {
 Cycle.run(main, {
 	DOM: makeDOMDriver('#app-container'),
 	Render: makeRenderDriver(
-		config.renderMode === '2d' ? VideoRender2d :
-				null
+		config.renderMode === '2d' ? VideoRender2d : null
 	),
 	Video: makeVideoDriver(config.videos, html5Player),
-	Navigator: makeNavigatorDriver({
-		startLink: config.startLink,
-		autoplay: true
-	}),
 	Plugin: makePluginManagerDriver(config.plugins)
 });
