@@ -5,9 +5,9 @@ const {is} = require('ramda');
 const xs = require('xstream');
 const delay = require('xstream/extra/delay').default;
 const SL = require('../../src/utils/xs').SimpleListener;
-const {makeNavigatorDriver} = require('../../src/drivers/navigator-driver');
+const navigator = require('../../src/lib/navigator');
 
-describe('Navigator driver', ()=> {
+xdescribe('Navigator driver', ()=> {
 	describe ('makeNavigatorDriver', ()=> {
 		it('should be a function', ()=>
 			assert.strictEqual(typeof makeNavigatorDriver, 'function')

@@ -2,8 +2,8 @@
 /* global describe, it, beforeEach */
 const {is, pipe} = require('ramda');
 const assert = require('assert');
-const Interval = require('../../src/utils/interval').Interval;
-const {IntervalTree, isEmpty, size, insert, search, EmptyTree} = require('../../src/utils/interval-tree');
+const Interval = require('../../src/utils/data/interval').Interval;
+const {IntervalTree, isEmpty, size, insert, search, EmptyTree} = require('../../src/utils/data/interval-tree');
 
 describe('Interval tree', ()=> {
 	it('initialization should not fail', ()=> {

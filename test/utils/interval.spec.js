@@ -2,7 +2,7 @@
 /* global describe, it, beforeEach */
 const {is} = require('ramda');
 const assert = require('assert');
-const {Interval, contains} = require('../../src/utils/interval');
+const {Interval, contains} = require('../../src/utils/data/interval');
 
 describe('Interval', ()=> {
 	it('initialization should not fail', ()=> {

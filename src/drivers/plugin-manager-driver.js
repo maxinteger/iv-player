@@ -1,7 +1,7 @@
 import {identity, memoize, map, reduce, filter, pipe, groupBy, toPairs, fromPairs, uniq, mapObjIndexed} from "ramda";
 import {videoLinkPlugin} from '../plugins/video-link/index';
-import {Interval} from "../utils/interval";
-import * as it from "../utils/interval-tree";
+import {Interval} from "../utils/data/interval";
+import * as it from "../utils/data/interval-tree";
 import {log, logError} from '../utils/log';
 
 
