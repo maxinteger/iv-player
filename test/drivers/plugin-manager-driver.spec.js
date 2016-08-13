@@ -5,7 +5,7 @@ const {is} = require('ramda');
 const xs = require('xstream');
 const delay = require('xstream/extra/delay').default;
 const SL = require('../../src/utils/xs').SimpleListener;
-const {makePluginManagerDriver} = require('../../src/drivers/plugin-manager-driver');
+const {makePluginManagerDriver} = require('../../src/lib/plugin-manager-driver');
 
 describe('Plugin manager driver', () => {
     describe('makePluginManagerDriver', () => {

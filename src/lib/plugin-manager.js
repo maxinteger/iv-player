@@ -1,8 +1,7 @@
-import {identity, memoize, map, reduce, filter, pipe, groupBy, toPairs, fromPairs, uniq, mapObjIndexed} from "ramda";
+import {prop, identity, memoize, map, reduce, filter, pipe, groupBy, toPairs, fromPairs, uniq, mapObjIndexed} from "ramda";
 import {videoLinkPlugin} from '../plugins/video-link/index';
 import {Interval} from "../utils/data/interval";
 import * as it from "../utils/data/interval-tree";
-import {log, logError} from '../utils/log';
 
 
 const pluginResolver = p => videoLinkPlugin(p);
@@ -22,10 +21,27 @@ const prepareVideoPlugins = pipe(
 	}))
 );
 
-export const makePluginManagerDriver = (plugins) => {
-	let activeVideo = null;
-	const activePlugins = {};
+const process = ({videoPlugins}) => ({activeVideo, activePlugins}, {type, vref, time}) => {
+	switch (type) {
+		case 'switch':
+			activeVideo = vref;
+			break;
+		case 'update':
+			if (videoPlugins[activeVideo]) {
+				activePlugins[activeVideo] = map(prop('data'), it.search(time, videoPlugins[activeVideo].timeTrack));
+			}
+			break;
+	}
 
+	return ({
+		activeVideo,
+		activePlugins,
+		currentPlugins: activePlugins[activeVideo] || []
+	})
+};
+
+
+export default plugins => stream => {
 	const pluginsRes = map(p => ({
 		params: p.params,
 		view: pluginResolver(p)
@@ -35,34 +51,7 @@ export const makePluginManagerDriver = (plugins) => {
 
 	const videoPlugins = prepareVideoPlugins(pluginsRes);
 
-	const render = (drivers) => map(
-		p => p.view(drivers),
-		activePlugins[activeVideo] || []
-	);
+	return stream
+		.fold(process({videoPlugins, playerPlugins}), {activeVideo: null, activePlugins: [], currentPlugins: []});
 
-	const nextHandler = (action) => {
-		switch (action.type) {
-			case 'switch':
-				activeVideo = action.vref;
-				break;
-			case 'update':
-				if (videoPlugins[activeVideo]) {
-					activePlugins[activeVideo] = map(
-						p => p.data,
-						it.search(action.time, videoPlugins[activeVideo].timeTrack)
-					);
-				}
-				break;
-		}
-	};
-
-	return sink_ => {
-		sink_.addListener({
-			next: nextHandler,
-			complete: () => log('PMD completed!'),
-			error: logError('PMD Error :: ')
-		});
-
-		return {render};
-	}
 };
