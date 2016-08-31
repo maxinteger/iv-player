@@ -4,8 +4,10 @@ Features:
 - video loading
 - plugins
 - webGL rendering
+- seek with d&d
 
 DONE:
+- seek on timeline
 - video switch
 - can play video with canvas renderer
 - Interval Tree implementation

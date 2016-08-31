@@ -7,7 +7,8 @@ import {multiFromEvent} from "../../utils/xs";
 export const PLAY = 'play';
 export const PAUSE = 'pause';
 export const SWITCH = 'switch';
-export const TICK = 1000 / 60;
+export const SEEK = 'seek';
+export const TICK = 1000 / 30;
 
 export const makeVideoDriver = (sources, playerAdapter) =>{
 	if(isArrayLike(sources) || !keys(sources).length){
@@ -70,6 +71,11 @@ export const makeVideoDriver = (sources, playerAdapter) =>{
 					case PAUSE:
 						state.playing = false;
 						return state.activeVideo && state.activeVideo.pause();
+
+					case SEEK:
+						const time = action.time === void 0 ? action.percent * state.activeVideo.duration : action.time;
+						state.activeVideo.currentTime = time;
+						break;
 
 					case SWITCH:
 						if (!videos[action.vref]) throw new Error(`Invalid video reference: "${action.vref}"`);

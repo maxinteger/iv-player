@@ -3,7 +3,7 @@ import xs from 'xstream';
 import {map, merge, prop, pipe} from 'ramda';
 import {div, canvas, button, makeDOMDriver} from '@cycle/dom';
 
-import {makeVideoDriver, PLAY, PAUSE} from './drivers/video/video-driver';
+import {makeVideoDriver, PLAY, PAUSE, SEEK} from './drivers/video/video-driver';
 import {makeRenderDriver} from './drivers/render';
 import {VideoRender2d} from "./drivers/render/render-2d";
 import navigator from "./lib/navigator";
@@ -13,8 +13,22 @@ import config from './config';
 import * as s from './style.css';
 
 function main({DOM, Video, Render, Plugin}) {
-	const play_ = DOM.select('#play').events('click').map( () => ({type: PLAY}) );
-	const pause_ = DOM.select('#pause').events('click').map( () => ({type: PAUSE}) );
+	const play_ = DOM
+		.select('#play')
+		.events('click')
+		.mapTo({type: PLAY});
+
+	const pause_ = DOM
+		.select('#pause')
+		.events('click')
+		.mapTo({type: PAUSE});
+
+	const timebar_ = DOM
+		.select('#timebar')
+		.events('click')
+		.map( ({clientX, target}) => ({type: SEEK, percent: (clientX - target.offsetLeft) / target.offsetWidth}) )
+	;
+
 	const videoLinks_ = DOM.select('.vlink').events('click').map( x => ({type: 'videolink', vref: x.target.vref, play: x.target.play, time: x.target.time}) );
 	const video_ = Video.events_;
 	const nav_ = videoLinks_
@@ -23,7 +37,8 @@ function main({DOM, Video, Render, Plugin}) {
 	const videoUpdate_ = xs.merge(
 		nav_,
 		play_,
-		pause_
+		pause_,
+		timebar_
 	);
 
 	const plugins_ = xs
@@ -55,7 +70,7 @@ function main({DOM, Video, Render, Plugin}) {
 							: button('#play', 'Play'),
 						button('.vlink', { props: {vref: 'video_0001', play: false}}, 'Video #1 and pause'),
 						button('.vlink', { props: {vref: 'video_0002', play: true}}, 'Video #2 and play'),
-						div(`.${s.timeBar}`, [
+						div(`#timebar.${s.timeBar}`, [
 							div(`.${s.progress}`, {style: {transform: `scaleX(${source ? (source.currentTime / source.duration) : 0})`}})
 						])
 					]),
