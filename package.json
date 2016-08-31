@@ -12,10 +12,11 @@
     "build": "webpack"
   },
   "dependencies": {
-    "@cycle/dom": "12.1.0",
+    "@cycle/dom": "12.2.2",
     "@cycle/xstream-run": "3.0.4",
-    "xstream": "5.3.2",
-    "ramda": "^0.22.1"
+    "ramda": "^0.22.1",
+    "ramda-fantasy": "^0.6.1",
+    "xstream": "6.2.0"
   },
   "devDependencies": {
     "assert": "^1.4.1",
